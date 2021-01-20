@@ -3,6 +3,7 @@ import sys
 
 import requests
 
+from src.logger.logger import LOGGER
 from src.tool.dotenv import get_variables_from_dotenv
 
 
@@ -20,6 +21,7 @@ class AzurePartnerCenterEnv:
         return cls.__instance
 
     def __init__(self) -> None:
+        LOGGER.debug('DEV ENVIRONMENTS SETTING')
         # .env 파일 존재시, 환경변수 업데이트 후 불러오기.
         env_path = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), '.env')
         if os.path.exists(env_path):
@@ -60,3 +62,6 @@ class AzurePartnerCenterEnv:
         r.raise_for_status()
         # TODO: 에러처리
         self.__access_token = r.json()['access_token']
+
+
+ENV = AzurePartnerCenterEnv.instance()

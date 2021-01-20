@@ -1,5 +1,9 @@
 """
 Microsoft Partner Center API호출을 통한 정보 수집 Controller
+
+1. 고객리스트, 구독리스트
+2. 사용량 * 가격 계산
+3. 인보이스, 사용량
 """
 from datetime import datetime, timedelta
 
@@ -34,8 +38,6 @@ def get_all_subscription_info(tenants: list) -> dict:
     result = {}
     for tenant in tenants:
         result[tenant] = pc_request.customer_subscription_info(tenant)['items']
-        for subscription in result[tenant]:
-            subscription.pop('links', None)
     LOGGER.debug(f'result : {result}')
     return result
 
@@ -60,12 +62,21 @@ def filter_azure_subscription(subscription_info_list: dict) -> dict:
     return result
 
 
-# tenant, subscription id를 입력으로 특정일에 대한 사용량을 받아옴.
-def get_azure_day_usage(tenant: str, subscription: str, t_date: datetime) -> list:
+# tenant, subscription id를 입력으로 특정일에 대한 사용량을 받아옴. TODO: size control 필요
+def get_azure_daily_usage(tenant: str, subscription: str, t_date: datetime, params=None) -> list:
+    if params is None:
+        params = {
+            'granularity': 'daily',
+            'show_details': 'true',
+            'size': 1000
+        }
     convert_date_fmt = '%Y-%m-%d'
     target_date = {'start_time': t_date.strftime(convert_date_fmt),
                    'end_time': (t_date + timedelta(days=1)).strftime(convert_date_fmt)}
-    return pc_request.azure_subscription_daily_usage(tenant, subscription, target_date)['items']
+    params.update(target_date)
+    return pc_request.azure_subscription_daily_usage(tenant=tenant,
+                                                     subscription=subscription,
+                                                     param=params)['items']
 
 
 # 년-월 입력으로 해당 인보이스 받아옴 (복수일경우 에러)
@@ -80,6 +91,7 @@ def get_invoice_summary(invoiceid: str):
 
 # 인보이스ID 입력으로 인보이스 자세히(모든 사용내역) 받아옴
 def get_invoice_detail(invoiceid: str):
+    # totalCount가 2000 이상일경우 seekOperation=Next 을 param으로 추가호출
     pass
 
 
@@ -89,5 +101,7 @@ def get_ms_product_price():
 
 
 # Azure 가격 업데이트    리전 필요
-def get_azure_resource_price(region='kr'):
-    pass
+def get_azure_resource_price(region='kr', currency='KRW'):
+    rates = pc_request.ratecards(param={'currency': currency, 'region': region})
+    LOGGER.debug(f'Meter len : {len(rates["meters"])}')
+    return rates
