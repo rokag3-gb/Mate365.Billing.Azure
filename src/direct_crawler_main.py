@@ -5,38 +5,106 @@
 """
 from datetime import datetime
 
-from src.cm_controller import save_ratecard, save_azure_customer_subscription, save_azure_customer
+from src.cm_controller import save_ratecard, save_azure_customer_subscription, save_azure_customer, \
+    get_azure_utilization_user, remove_azure_utilization_user, save_azure_utilization_user, \
+    save_azure_customer_software, save_azure_customer_ri
 from src.ms_pc_controller import *
 
 
-def crawler_main(tenant_list: list, date: datetime = None):
-    daily_usage_cralwer(tenant_list)
+# def crawler_main(tenant_list: list, date: datetime = None):
+#     daily_usage_cralwer(tenant_list)
 
 
-def daily_usage_cralwer(tenant_list: list, date: datetime = None):
-    # TODO: Customer 정보 업데이트.
+def daily_usage_cralwer(tenant_list: list = None, t_date: datetime = None, term=1):
+    """
+
+    :param tenant_list:
+    :param t_date:
+    :param term:
+    :return:
+    """
+    # Customer 정보 업데이트. #######################################################
     tenent_info = get_all_tenant_info()
     save_azure_customer(tenent_info)
-    # Default : 어제 사용량 요청
-    if date is None:
-        today = datetime.now()
-        date = datetime(year=today.year,
-                        month=today.month,
-                        day=(today.day - 1))
-    # 모든 구독 사용현황
-    subscriptions = get_all_subscription_info(tenant_list)
-    # TODO: DATABASE 저장
-    save_azure_customer_subscription(subscriptions, commit=True)
+    # #############################################################################
+    if tenant_list is None:
+        tenant_list = []
+        for tenant in tenent_info['items']:
+            tenant_list.append(tenant['id'])
+    LOGGER.debug(f'수집 Tenant 리스트 : {tenant_list}')
+    # 모든 구독 사용현황 #############################################################
+    subscriptions_info = get_all_subscription_info(tenant_list)
+    # CM DATABASE 저장
+    if len(subscriptions_info.keys()) > 0:
+        save_azure_customer_subscription(subscriptions_info, commit=True)
+    # #############################################################################
 
-    # 모든 Azure 구독 수집 & Azure 사용량 수집
-    azure_subscriptions = filter_azure_subscription(subscriptions)
+    # 모든 RI, Software (Entitlements) 수집 #########################################
+    software_info_list = get_all_azure_software_info(tenant_list)
+    ri_info_list = get_all_azure_reserved_info(tenant_list)
+    # TODO: SOFTWARE, RI to DATABASE
+    save_azure_customer_software(software_info_list)
+    save_azure_customer_ri(ri_info_list)
+    # ##############################################################################
+
+    # 모든 Azure 구독 수집 & Azure 사용량 수집 #########################################
+    azure_subscriptions = filter_azure_subscription(subscriptions_info)
     azure_daily_usages = []  # 모든 구독에 대한 사용량 [(tenant, subscription, [usage list]) ...]
+    # Default : 어제 사용량 요청
+    if t_date is None:
+        today = datetime.now()
+        t_date = datetime(year=today.year,
+                          month=today.month,
+                          day=today.day) - timedelta(days=1)
     for t in azure_subscriptions:
         for s in azure_subscriptions[t]:
             azure_daily_usages.append((t, s['id'], get_azure_daily_usage(tenant=t,
                                                                          subscription=s['id'],
-                                                                         t_date=date)))
-    # TODO: DATABASE 저장
+                                                                         t_date=t_date)))
+    # CM DATABASE 저장
+    # get daily usage from CM database & if exist : DELETE & insert
+    for usage in azure_daily_usages:
+        cm_daily_usage = get_azure_utilization_user(tenant=usage[0],
+                                                    subscription=usage[1],
+                                                    start_time=t_date,
+                                                    offset=term)
+        if cm_daily_usage:
+            remove_azure_utilization_user(tenant=usage[0],
+                                          subscription=usage[1],
+                                          start_time=t_date,
+                                          offset=term)
+        save_azure_utilization_user(tenant=usage[0],
+                                    subscription=usage[1],
+                                    start_time=t_date,
+                                    end_time=t_date + timedelta(days=term),
+                                    daily_usage=usage[2],
+                                    commit=True)
+    # ##################################################################################
+
+
+def monthly_invoice_crawler(t_date: datetime = None):
+    # invoice의 경우 사용 다음달 기준으로 서치
+    if t_date is None:
+        today = datetime.now()
+        t_date = datetime(year=today.year,
+                          month=today.month,
+                          day=1)
+
+    # INVOICE SEARCH ########################################################
+    invoice_list = search_invoice(t_date=t_date)
+
+    if len(invoice_list) >= 2:
+        LOGGER.error('해당 월 인보이스가 2개 이상.')
+        LOGGER.exception(f'인보이스 목록: {invoice_list}')
+        raise
+    invoice_id = invoice_list[0]['id']
+    # TODO: invoice record DB 저장
+    # #######################################################################
+
+    # INVOICE DETAIL ########################################################
+    items = get_invoice_detail(invoice_id=invoice_id)
+    # TODO: invoice detail DB 저장
+    # #######################################################################
 
 
 def azure_csp_price_crawler():

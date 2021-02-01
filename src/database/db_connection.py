@@ -114,9 +114,9 @@ class DBConnect:
     def delete_data(self, sql, data=None, auto_commit=False):
         '''
         :param sql : str
-        :param data: [(col1, col2, col2, ...), ...]  List(tuple)
+        :param data: tuple (col1, col2, col2, ...)
         :param auto_commit:
-        :return: bool is_success
+        :return: int affected
         '''
         LOGGER.debug(f'Delete sql : {sql}')
         LOGGER.debug(f'data : {data}')
@@ -145,12 +145,12 @@ class DBConnect:
         raise sqllib.DatabaseError
 
     @_connect_check
-    def select_data(self, sql, data=None):
+    def select_data(self, sql, data=None) -> dict:
         '''
         :param sql : str
-        :param data: [(col1, col2, col2, ...), ...]  List(tuple)
+        :param data: (col1, col2, col2, ...), ...  tuple
         :param auto_commit:
-        :return: bool is_success
+        :return: dict
         '''
         LOGGER.debug(f'Select sql : {sql}')
         LOGGER.debug(f'data : {data}')

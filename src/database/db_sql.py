@@ -79,7 +79,7 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
     END
     """
     INSERT_AZURE_CUSTOMER = """
-INSERT INTO [dbo].[Azure_Customer]
+    INSERT INTO [dbo].[Azure_Customer]
            ([Id]
            ,[companyName]
            ,[tenantId]
@@ -101,7 +101,7 @@ INSERT INTO [dbo].[Azure_Customer]
            ,%s)
 """
     INSERT_AZURE_CUSTOMER_SUBSCRIPTION = """
-INSERT INTO [dbo].[Azure_Customer_Subscription]
+    INSERT INTO [dbo].[Azure_Customer_Subscription]
            ([tenantId]
            ,[subscriptionId]
            ,[offerId]
@@ -172,8 +172,86 @@ INSERT INTO [dbo].[Azure_Customer_Subscription]
            ,%s
            ,%s)
     """
+    INSERT_AZURE_CUSTOMER_SOFTWARE = """
+    INSERT INTO [dbo].[Azure_Entitlements_Software]
+               ([customerId]
+               ,[includeEntitlements]
+               ,[referenceOrderId]
+               ,[lineItemId]
+               ,[alternateId]
+               ,[productId]
+               ,[quantity]
+               ,[entitledArtifacts]
+               ,[skuId]
+               ,[entitlementType]
+               ,[expiryDate]
+               ,[RegDate]
+               ,[RequestUri]
+               ,[ResponseData])
+         VALUES
+               (%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s)
+    """
+    INSERT_AZURE_CUSTOMER_RI = """
+    INSERT INTO [dbo].[Azure_Entitlements_RI]
+               ([customerId]
+               ,[includeEntitlements]
+               ,[referenceOrderId]
+               ,[lineItemId]
+               ,[alternateId]
+               ,[productId]
+               ,[quantity]
+               ,[quantityDetails_status]
+               ,[entitledArtifacts]
+               ,[entitledArtifacts_uri]
+               ,[entitledArtifacts_headers]
+               ,[entitledArtifacts_ResourceId]
+               ,[entitledArtifacts_artifactType]
+               ,[entitledArtifacts_dynamicAttributes]
+               ,[skuId]
+               ,[entitlementType]
+               ,[fulfillmentState]
+               ,[expiryDate]
+               ,[RegDate]
+               ,[RequestUri]
+               ,[ResponseData])
+         VALUES
+               (%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s)
+    """
     INSERT_AZURE_INVOICE = """
-INSERT INTO [dbo].[Azure_Invoice]
+    INSERT INTO [dbo].[Azure_Invoice]
            ([invoiceDate]
            ,[invoiceId]
            ,[billingPeriodStartDate]
@@ -277,30 +355,26 @@ INSERT INTO [dbo].[Azure_Invoice]
            ,<ResponseData, varchar(max),>)
     """
     INSERT_OR_UPDATE_AZURE_METER = """
-GO
-
-UPDATE [dbo].[Azure_Meter]
-   SET [currency] = <currency, varchar(20),>
-      ,[region] = <region, varchar(20),>
-      ,[locale] = <locale, varchar(20),>
-      ,[isTaxIncluded] = <isTaxIncluded, bit,>
-      ,[meterId] = <meterId, varchar(50),>
-      ,[meter_name] = <meter_name, varchar(100),>
-      ,[meter_rates] = <meter_rates, varchar(500),>
-      ,[meter_tags] = <meter_tags, varchar(100),>
-      ,[meter_category] = <meter_category, varchar(50),>
-      ,[meter_Subcategory] = <meter_Subcategory, varchar(50),>
-      ,[meter_region] = <meter_region, varchar(20),>
-      ,[meter_unit] = <meter_unit, varchar(20),>
-      ,[meter_includedQuantity] = <meter_includedQuantity, float,>
-      ,[meter_effectiveDate] = <meter_effectiveDate, datetime,>
-      ,[RegDate] = <RegDate, datetime,>
-      ,[RequestUri] = <RequestUri, varchar(300),>
-      ,[ResponseData] = <ResponseData, varchar(max),>
- WHERE <검색 조건,,>
-GO
-
-
+    UPDATE [dbo].[Azure_Meter]
+       SET [currency] = <currency, varchar(20),>
+          ,[region] = <region, varchar(20),>
+          ,[locale] = <locale, varchar(20),>
+          ,[isTaxIncluded] = <isTaxIncluded, bit,>
+          ,[meterId] = <meterId, varchar(50),>
+          ,[meter_name] = <meter_name, varchar(100),>
+          ,[meter_rates] = <meter_rates, varchar(500),>
+          ,[meter_tags] = <meter_tags, varchar(100),>
+          ,[meter_category] = <meter_category, varchar(50),>
+          ,[meter_Subcategory] = <meter_Subcategory, varchar(50),>
+          ,[meter_region] = <meter_region, varchar(20),>
+          ,[meter_unit] = <meter_unit, varchar(20),>
+          ,[meter_includedQuantity] = <meter_includedQuantity, float,>
+          ,[meter_effectiveDate] = <meter_effectiveDate, datetime,>
+          ,[RegDate] = <RegDate, datetime,>
+          ,[RequestUri] = <RequestUri, varchar(300),>
+          ,[ResponseData] = <ResponseData, varchar(max),>
+     WHERE <검색 조건,,>
+    
     """
     INSERT_AZURE_METER = """
     INSERT INTO [dbo].[Azure_Meter]
@@ -342,7 +416,7 @@ GO
 
     """
     INSERT_OFFERTERM = """
-INSERT INTO [dbo].[Azure_OfferTerm]
+    INSERT INTO [dbo].[Azure_OfferTerm]
            ([currency]
            ,[region]
            ,[name]
@@ -499,17 +573,41 @@ INSERT INTO [dbo].[Azure_OfferTerm]
            ,%s
            ,%s)
     """
-    # SELECT_PREPROCESS_OF_DAY_AND_SUBSCRIPTION_SQL = """SELECT * FROM [AzureRhipe_preprocess] WHERE last_update_date = %s and subscription = %s"""
-    # SELECT_PREPROCESS_OF_DAY_ALL_SQL = """SELECT * FROM [AzureRhipe_preprocess] WHERE last_update_date = %s"""
-    # DELETE_PREPROCESS_OF_DAY_SQL = """DELETE FROM [AzureRhipe_preprocess] WHERE last_update_date = %s and subscription = %s"""
-    #
-    # INSERT_PREPROCESS_SQL = "INSERT INTO [AzureRhipe_preprocess] ([tenant], [subscription], [body], [last_update_date]) VALUES (%s, %s, %s, %s);"
-    # UPDATE_PREPROCESS_SQL = """UPDATE [AzureRhipe_preprocess] set body = JSON_MODIFY(body, '$.Services', JSON_QUERY(%s)) WHERE [tenant] = %s and [subscription] = %s and [last_update_date] = %s"""
-    # INSERT_INVOICE_SQL = """INSERT INTO [AzureRhipe_invoice] ([SubscriptionId], [OfferName], [ChargeStartDate], [ChargeEndDate], [UnitPrice],
-    #          [UnitPriceRrp], [Quantity], [BillableRatio], [SubTotal], [SubTotalRrp])
-    #         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    # UPDATE_INVOICE_IN_PREPROCESS_SQL = """UPDATE [AzureRhipe_preprocess] set body = JSON_MODIFY(body, '$.BillingTable', JSON_QUERY(%s))
-    #         WHERE [preprocess_id] = (SELECT [preprocess_id] FROM
-    #          (SELECT [preprocess_id] FROM [AzureRhipe_preprocess] WHERE [subscription] = %s and [last_update_date] >= %s and
-    #           [last_update_date] <= %s order by [last_update_date] desc LIMIT 1) AS s)"""
-    # SELECT_PRODUCT_PRICE_ALL = """SELECT * FROM [AzureRhipe_product_price]"""
+    SELECT_AZURE_UTILIZATION_WHERE_USER = """
+    SELECT [Seq]
+    ,[start_time]
+    ,[end_time]
+    ,[tenantId]
+    ,[subscriptionId]
+    ,[usageStartTime]
+    ,[usageEndTime]
+    ,[resourceId]
+    ,[resourceName]
+    ,[resourceCategory]
+    ,[resourceSubCategory]
+    ,[resourceRegion]
+    ,[quantity]
+    ,[unit]
+    ,[ResourceUri]
+    ,[Location]
+    ,[PartNumber]
+    ,[OrderNumber]
+    ,[tags]
+    ,[additionalInfo]
+    ,[RegDate]
+    ,[RequestUri]
+    ,[ResponseData]
+  FROM [dbo].[Azure_Utilization]
+  WHERE [start_time]=%s and 
+      [end_time]=%s and
+      [tenantId]=%s and
+      [subscriptionId]=%s
+
+    """
+    DELETE_AZURE_UTILIZATION_WHERE_USER = """
+    DELETE FROM [dbo].[Azure_Utilization]
+    WHERE [start_time]=%s and 
+      [end_time]=%s and
+      [tenantId]=%s and
+      [subscriptionId]=%s
+    """
