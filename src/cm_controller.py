@@ -7,18 +7,19 @@ import json
 from datetime import datetime, timedelta
 
 from src.database.db_connection import DBConnect
+from src.env import AzurePartnerCenterEnv
 from src.logger.logger import LOGGER
 
 
 MS_TIME_FORMATTING = '%Y-%m-%dT%H:%M:%S%z'
 MS_TIME_FORMATTING_WITHOUT_ZONE = '%Y-%m-%dT%H:%M:%S'
-
+is_commit = AzurePartnerCenterEnv.instance().commit
 
 def get_target_tenant_list():
     pass
 
 
-def save_azure_customer(tenant_info, commit=True):
+def save_azure_customer(tenant_info, commit=is_commit):
     db = DBConnect.get_instance()
     sql = db.get_sql().INSERT_OR_UPDATE_AZURE_CUSTOMER  # Update or Insert
     insert_data = []
@@ -33,7 +34,7 @@ def save_azure_customer(tenant_info, commit=True):
     db.close()
 
 
-def save_azure_customer_subscription(subscription_info, commit=True):
+def save_azure_customer_subscription(subscription_info, commit=is_commit):
     db = DBConnect.get_instance()
     sql = db.get_sql().INSERT_AZURE_CUSTOMER_SUBSCRIPTION
     insert_data = []
@@ -58,7 +59,7 @@ def save_azure_customer_subscription(subscription_info, commit=True):
     db.close()
 
 
-def save_azure_customer_software(software_info, commit=True):
+def save_azure_customer_software(software_info, commit=is_commit):
     db = DBConnect.get_instance()
     sql = db.get_sql().INSERT_AZURE_CUSTOMER_SOFTWARE
     insert_data = []
@@ -76,7 +77,7 @@ def save_azure_customer_software(software_info, commit=True):
     db.close()
 
 
-def save_azure_customer_ri(ri_info, commit=True):
+def save_azure_customer_ri(ri_info, commit=is_commit):
     db = DBConnect.get_instance()
     sql = db.get_sql().INSERT_AZURE_CUSTOMER_RI
     insert_data = []
@@ -110,7 +111,7 @@ def save_azure_customer_ri(ri_info, commit=True):
 
 
 def save_azure_utilization_user(tenant: str, subscription: str, start_time: datetime,
-                                end_time: datetime, daily_usage: list, commit=True):
+                                end_time: datetime, daily_usage: list, commit=is_commit):
     db = DBConnect.get_instance()
     sql = db.get_sql().INSERT_AZURE_UTILIZATION
     # [start_time],[end_time],[tenantId],[subscriptionId],[usageStartTime],[usageEndTime],[resourceId],[resourceName],
@@ -142,7 +143,7 @@ def get_azure_utilization_user(tenant: str, subscription: str,
 
 
 def remove_azure_utilization_user(tenant: str, subscription: str,
-                                  start_time: datetime, offset=1, commit=True):
+                                  start_time: datetime, offset=1, commit=is_commit):
     start_time = start_time
     end_time = start_time + timedelta(days=offset)
     db = DBConnect.get_instance()
@@ -154,7 +155,7 @@ def remove_azure_utilization_user(tenant: str, subscription: str,
     return db.delete_data(sql, delete_data)
 
 
-def save_ratecard(rates, region='kr', currency='KRW', is_shared=False, commit=True):
+def save_ratecard(rates, region='kr', currency='KRW', is_shared=False, commit=is_commit):
     """
     DATABASE의 [Azure_Meter] : 파트너가격
     DATABASE의 [Azure_Meter_Listprice] : 소비자가격(is_shared)
@@ -214,7 +215,7 @@ def save_ratecard(rates, region='kr', currency='KRW', is_shared=False, commit=Tr
     db.close()
 
 
-def save_invoice(data: list, commit=True):
+def save_invoice(data: list, commit=is_commit):
     db = DBConnect.get_instance()
     # insert, 인보이스 존재시 오류
     sql = db.get_sql().INSERT_AZURE_INVOICE

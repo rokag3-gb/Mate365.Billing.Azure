@@ -1,6 +1,7 @@
 import os
 
 from src.database import db_sql
+from src.env import AzurePartnerCenterEnv
 from src.logger.logger import LOGGER
 
 if os.environ['DATABASE_TYPE'] == 'sqlite3':
@@ -52,6 +53,7 @@ class DBConnect:
 
     @staticmethod
     def _options():
+        env = AzurePartnerCenterEnv.instance()
         if os.environ['DATABASE_TYPE'] == 'mysql':
             return {'database': os.environ['DATABASE_NAME']
                     }
@@ -59,7 +61,8 @@ class DBConnect:
             return {'host': os.environ['DATABASE_HOST'],
                     'port': os.environ['DATABASE_PORT'],
                     'user': os.environ['DATABASE_USER'],
-                    'password': os.environ['DATABASE_PASSWORD'],
+                    # 'password': os.environ['DATABASE_PASSWORD'],
+                    'password': env.database_password,
                     'charset': 'utf8',
                     'database': os.environ['DATABASE_NAME'],
                     'autocommit': False

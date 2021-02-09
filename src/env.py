@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 
@@ -23,11 +24,43 @@ class AzurePartnerCenterEnv:
     def __init__(self) -> None:
         LOGGER.debug('DEV ENVIRONMENTS SETTING')
         # .env 파일 존재시, 환경변수 업데이트 후 불러오기.
-        env_path = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), '.env')
-        if os.path.exists(env_path):
-            os.environ.update(get_variables_from_dotenv(env_path))
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-f', '--file', action='store_true', help='.env파일을 통한 환경변수 등록')
+        parser.add_argument('--database-password', type=str, help='')
+        parser.add_argument('--app-secret', type=str, help='')
+        parser.add_argument('--daily-usage', action='store_true', help='일별 사용량 수집')
+        parser.add_argument('--monthly-invoice', action='store_true', help='월별 인보이스 수집')
+        parser.add_argument('--price-update', action='store_true', help='Azure 제품군 가격 업데이트')
+        
+        args = parser.parse_args()
+        # 실행 로직 선택(bool)
+        self.daily_usage = args.daily_usage
+        self.monthly_invoice = args.monthly_invoice
+        self.price_update = args.price_update
+        # 파일로 환경변수 세팅
+        if args.file:
+            env_path = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), '.env')
+            if os.path.exists(env_path):
+                os.environ.update(get_variables_from_dotenv(env_path))
+        self.stage = os.environ['STAGE']
+        # Database 환경변수
+        if args.database_password:
+            self.database_password = args.database_password
+        else:
+            self.database_password = os.environ['DATABASE_TYPE']
+        self.database_type = os.environ['DATABASE_TYPE']
+        self.database_host = os.environ['DATABASE_HOST']
+        self.database_port = os.environ['DATABASE_PORT']
+        self.database_user = os.environ['DATABASE_USER']
+        self.database_name = os.environ['DATABASE_NAME']
+        self.commit = True if self.stage == 'prod' else False
+        # Partercenter APP AUTH
         self.appid = os.environ['APPID']
         self.secret = os.environ['SECRET']
+        if args.app_secret:
+            self.secret = args.app_secret
+        else:
+            self.secret = os.environ['SECRET']
         self.tenant = os.environ['TENANT']
         self.baseurl = os.environ['PARTNER_CENTER_API_BASEURL'] or 'https://api.partnercenter.microsoft.com'
         self.__access_token = None
@@ -64,4 +97,4 @@ class AzurePartnerCenterEnv:
         self.__access_token = r.json()['access_token']
 
 
-ENV = AzurePartnerCenterEnv.instance()
+# ENV = AzurePartnerCenterEnv.instance()
