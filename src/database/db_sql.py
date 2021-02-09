@@ -250,8 +250,67 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
                ,%s
                ,%s)
     """
-    INSERT_AZURE_INVOICE = """
-    INSERT INTO [dbo].[Azure_Invoice]
+    INSERT_AZURE_INVOICE = """    
+    DECLARE @invoiceDate datetime;
+    DECLARE @invoiceId varchar(30);
+    DECLARE @billingPeriodStartDate datetime;
+    DECLARE @billingPeriodEndDate datetime;
+    DECLARE @totalCharges money;
+    DECLARE @paidAmount money;
+    DECLARE @currencyCode varchar(20);
+    DECLARE @currencySymbol nvarchar(10);
+    DECLARE @pdfDownloadLink varchar(300);
+    DECLARE @invoiceType varchar(50);
+    DECLARE @documentType varchar(50);
+    DECLARE @state varchar(50);
+    DECLARE @links_self_uri varchar(300);
+    DECLARE @RegDate datetime;
+    DECLARE @RequestUri varchar(300);
+    DECLARE @ResponseData varchar(max);
+    
+    SET @invoiceDate = %s;
+    SET @invoiceId = %s;
+    SET @billingPeriodStartDate = %s;
+    SET @billingPeriodEndDate = %s;
+    SET @totalCharges = %s;
+    SET @paidAmount = %s;
+    SET @currencyCode = %s;
+    SET @currencySymbol = %s;
+    SET @pdfDownloadLink = %s;
+    SET @invoiceType = %s;
+    SET @documentType = %s;
+    SET @state = %s;
+    SET @links_self_uri = %s;
+    SET @RegDate = %s;
+    SET @RequestUri = %s;
+    SET @ResponseData = %s;
+    
+    IF EXISTS (SELECT 1
+               FROM [dbo].[Azure_Invoice]
+               WHERE [invoiceId] = @invoiceId)
+    BEGIN
+         UPDATE [dbo].[Azure_Invoice]
+            SET [invoiceDate] = @invoiceDate
+              ,[invoiceId] = @invoiceId
+              ,[billingPeriodStartDate] = @billingPeriodStartDate
+              ,[billingPeriodEndDate] = @billingPeriodEndDate
+              ,[totalCharges] = @totalCharges
+              ,[paidAmount] = @paidAmount
+              ,[currencyCode] = @currencyCode
+              ,[currencySymbol] = @currencySymbol
+              ,[pdfDownloadLink] = @pdfDownloadLink
+              ,[invoiceType] = @invoiceType
+              ,[documentType] = @documentType
+              ,[state] = @state
+              ,[links_self_uri] = @links_self_uri
+              ,[RegDate] = @RegDate
+              ,[RequestUri] = @RequestUri
+              ,[ResponseData] = @ResponseData
+            WHERE [invoiceId] = @invoiceId
+    END
+    ELSE
+    BEGIN
+         INSERT INTO [dbo].[Azure_Invoice]
            ([invoiceDate]
            ,[invoiceId]
            ,[billingPeriodStartDate]
@@ -268,92 +327,93 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,[RegDate]
            ,[RequestUri]
            ,[ResponseData])
-     VALUES
-           (%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s)
+           VALUES
+           (@invoiceDate
+           ,@invoiceId
+           ,@billingPeriodStartDate
+           ,@billingPeriodEndDate
+           ,@totalCharges
+           ,@paidAmount
+           ,@currencyCode
+           ,@currencySymbol
+           ,@pdfDownloadLink
+           ,@invoiceType
+           ,@documentType
+           ,@state
+           ,@links_self_uri
+           ,@RegDate
+           ,@RequestUri
+           ,@ResponseData)
+    END
     """
-    INSERT_AZURE_INVOICE_DETAIL = """
-    INSERT INTO [dbo].[Azure_Invoice_Detail]
-           ([invoiceId]
-           ,[customerBillableAccount]
-           ,[usageDate]
-           ,[invoiceLineItemType]
-           ,[partnerId]
-           ,[partnerName]
-           ,[partnerBillableAccountId]
-           ,[customerId]
-           ,[domainName]
-           ,[customerCompanyName]
-           ,[mpnId]
-           ,[tier2MpnId]
-           ,[invoiceNumber]
-           ,[subscriptionId]
-           ,[subscriptionName]
-           ,[subscriptionDescription]
-           ,[billingCycleType]
-           ,[orderId]
-           ,[serviceName]
-           ,[serviceType]
-           ,[resourceGuid]
-           ,[resourceName]
-           ,[region]
-           ,[consumedQuantity]
-           ,[chargeStartDate]
-           ,[chargeEndDate]
-           ,[unit]
-           ,[billingProvider]
-           ,[attributes_objectType]
-           ,[RegDate]
-           ,[RequestUri]
-           ,[ResponseData])
-     VALUES
-           (<invoiceId, varchar(30),>
-           ,<customerBillableAccount, varchar(20),>
-           ,<usageDate, datetime,>
-           ,<invoiceLineItemType, varchar(50),>
-           ,<partnerId, varchar(50),>
-           ,<partnerName, nvarchar(300),>
-           ,<partnerBillableAccountId, varchar(20),>
-           ,<customerId, varchar(30),>
-           ,<domainName, varchar(200),>
-           ,<customerCompanyName, nvarchar(300),>
-           ,<mpnId, varchar(20),>
-           ,<tier2MpnId, varchar(20),>
-           ,<invoiceNumber, varchar(30),>
-           ,<subscriptionId, varchar(50),>
-           ,<subscriptionName, nvarchar(200),>
-           ,<subscriptionDescription, nvarchar(1000),>
-           ,<billingCycleType, varchar(50),>
-           ,<orderId, varchar(50),>
-           ,<serviceName, varchar(200),>
-           ,<serviceType, nvarchar(200),>
-           ,<resourceGuid, varchar(50),>
-           ,<resourceName, nvarchar(200),>
-           ,<region, nvarchar(100),>
-           ,<consumedQuantity, float,>
-           ,<chargeStartDate, datetime,>
-           ,<chargeEndDate, datetime,>
-           ,<unit, varchar(20),>
-           ,<billingProvider, varchar(20),>
-           ,<attributes_objectType, varchar(200),>
-           ,<RegDate, datetime,>
-           ,<RequestUri, varchar(300),>
-           ,<ResponseData, varchar(max),>)
-    """
+    # INSERT_AZURE_INVOICE_DETAIL = """
+    # INSERT INTO [dbo].[Azure_Invoice_Detail]
+    #        ([invoiceId]
+    #        ,[customerBillableAccount]
+    #        ,[usageDate]
+    #        ,[invoiceLineItemType]
+    #        ,[partnerId]
+    #        ,[partnerName]
+    #        ,[partnerBillableAccountId]
+    #        ,[customerId]
+    #        ,[domainName]
+    #        ,[customerCompanyName]
+    #        ,[mpnId]
+    #        ,[tier2MpnId]
+    #        ,[invoiceNumber]
+    #        ,[subscriptionId]
+    #        ,[subscriptionName]
+    #        ,[subscriptionDescription]
+    #        ,[billingCycleType]
+    #        ,[orderId]
+    #        ,[serviceName]
+    #        ,[serviceType]
+    #        ,[resourceGuid]
+    #        ,[resourceName]
+    #        ,[region]
+    #        ,[consumedQuantity]
+    #        ,[chargeStartDate]
+    #        ,[chargeEndDate]
+    #        ,[unit]
+    #        ,[billingProvider]
+    #        ,[attributes_objectType]
+    #        ,[RegDate]
+    #        ,[RequestUri]
+    #        ,[ResponseData])
+    #  VALUES
+    #        (<invoiceId, varchar(30),>
+    #        ,<customerBillableAccount, varchar(20),>
+    #        ,<usageDate, datetime,>
+    #        ,<invoiceLineItemType, varchar(50),>
+    #        ,<partnerId, varchar(50),>
+    #        ,<partnerName, nvarchar(300),>
+    #        ,<partnerBillableAccountId, varchar(20),>
+    #        ,<customerId, varchar(30),>
+    #        ,<domainName, varchar(200),>
+    #        ,<customerCompanyName, nvarchar(300),>
+    #        ,<mpnId, varchar(20),>
+    #        ,<tier2MpnId, varchar(20),>
+    #        ,<invoiceNumber, varchar(30),>
+    #        ,<subscriptionId, varchar(50),>
+    #        ,<subscriptionName, nvarchar(200),>
+    #        ,<subscriptionDescription, nvarchar(1000),>
+    #        ,<billingCycleType, varchar(50),>
+    #        ,<orderId, varchar(50),>
+    #        ,<serviceName, varchar(200),>
+    #        ,<serviceType, nvarchar(200),>
+    #        ,<resourceGuid, varchar(50),>
+    #        ,<resourceName, nvarchar(200),>
+    #        ,<region, nvarchar(100),>
+    #        ,<consumedQuantity, float,>
+    #        ,<chargeStartDate, datetime,>
+    #        ,<chargeEndDate, datetime,>
+    #        ,<unit, varchar(20),>
+    #        ,<billingProvider, varchar(20),>
+    #        ,<attributes_objectType, varchar(200),>
+    #        ,<RegDate, datetime,>
+    #        ,<RequestUri, varchar(300),>
+    #        ,<ResponseData, varchar(max),>)
+    # """
     INSERT_OR_UPDATE_AZURE_METER = """
     UPDATE [dbo].[Azure_Meter]
        SET [currency] = <currency, varchar(20),>
@@ -415,6 +475,45 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,%s)
 
     """
+    INSERT_AZURE_METER_SHARED = """
+        INSERT INTO [dbo].[Azure_Meter_Listprice]
+               ([currency]
+               ,[region]
+               ,[locale]
+               ,[isTaxIncluded]
+               ,[meterId]
+               ,[meter_name]
+               ,[meter_rates]
+               ,[meter_tags]
+               ,[meter_category]
+               ,[meter_Subcategory]
+               ,[meter_region]
+               ,[meter_unit]
+               ,[meter_includedQuantity]
+               ,[meter_effectiveDate]
+               ,[RegDate]
+               ,[RequestUri]
+               ,[ResponseData])
+         VALUES
+               (%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s)
+
+        """
     INSERT_OFFERTERM = """
     INSERT INTO [dbo].[Azure_OfferTerm]
            ([currency]
@@ -433,6 +532,24 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,%s
            ,%s)
     """
+    INSERT_OFFERTERM_SHARED = """
+        INSERT INTO [dbo].[Azure_OfferTerm_Listprice]
+               ([currency]
+               ,[region]
+               ,[name]
+               ,[discount]
+               ,[excludedMeterId]
+               ,[effectiveDate]
+               ,[RegDate])
+         VALUES
+               (%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s)
+        """
     INSERT_PRICELIST = """
     INSERT INTO [dbo].[Azure_PriceList]
            ([ACDU]
@@ -611,3 +728,263 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
       [tenantId]=%s and
       [subscriptionId]=%s
     """
+    DELETE_AZURE_RATECARD = """DELETE FROM [dbo].[Azure_Meter]"""
+    DELETE_AZURE_RATECARD_SHARED = """DELETE FROM [dbo].[Azure_Meter_Listprice]"""
+    DELETE_AZURE_OFFERTERM = """DELETE FROM [dbo].[Azure_OfferTerm]"""
+    DELETE_AZURE_OFFERTERM_SHARED = """DELETE FROM [dbo].[Azure_OfferTerm_Listprice]"""
+    INSERT_AZURE_INVOICE_DETAIL_AZURE = """
+    INSERT INTO [dbo].[Azure_Invoice_Detail_Azure]
+               ([invoiceId]
+               ,[sku]
+               ,[includedQuantity]
+               ,[overageQuantity]
+               ,[listPrice]
+               ,[currency]
+               ,[pretaxCharges]
+               ,[taxAmount]
+               ,[postTaxTotal]
+               ,[preTaxEffectiveRate]
+               ,[postTaxEffectiveRate]
+               ,[chargeType]
+               ,[invoiceLineItemType]
+               ,[partnerId]
+               ,[partnerName]
+               ,[partnerBillableAccountId]
+               ,[customerId]
+               ,[domainName]
+               ,[customerCompanyName]
+               ,[mpnId]
+               ,[tier2MpnId]
+               ,[invoiceNumber]
+               ,[subscriptionId]
+               ,[subscriptionName]
+               ,[subscriptionDescription]
+               ,[billingCycleType]
+               ,[orderId]
+               ,[serviceName]
+               ,[serviceType]
+               ,[resourceGuid]
+               ,[resourceName]
+               ,[region]
+               ,[consumedQuantity]
+               ,[chargeStartDate]
+               ,[chargeEndDate]
+               ,[unit]
+               ,[billingProvider]
+               ,[RegDate]
+               ,[RequestUri]
+               ,[ResponseData])
+         VALUES
+               (%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s)
+
+    """
+    INSERT_AZURE_INVOICE_DETAIL_OFFICE = """
+
+    INSERT INTO [dbo].[Azure_Invoice_Detail_Office]
+               ([invoiceId]
+               ,[partnerId]
+               ,[customerId]
+               ,[customerName]
+               ,[mpnId]
+               ,[tier2MpnId]
+               ,[orderId]
+               ,[invoiceNumber]
+               ,[subscriptionId]
+               ,[syndicationPartnerSubscriptionNumber]
+               ,[offerId]
+               ,[durableOfferId]
+               ,[offerName]
+               ,[domainName]
+               ,[billingCycleType]
+               ,[subscriptionName]
+               ,[subscriptionDescription]
+               ,[chargeStartDate]
+               ,[chargeEndDate]
+               ,[chargeType]
+               ,[unitPrice]
+               ,[quantity]
+               ,[amount]
+               ,[totalOtherDiscount]
+               ,[subtotal]
+               ,[tax]
+               ,[totalForCustomer]
+               ,[currency]
+               ,[invoiceLineItemType]
+               ,[billingProvider]
+               ,[RegDate]
+               ,[RequestUri]
+               ,[ResponseData])
+         VALUES
+               (%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s)
+    """
+    INSERT_AZURE_INVOICE_DETAIL_ONETIME = """
+    INSERT INTO [dbo].[Azure_Invoice_Detail_Onetime]
+               ([invoiceId]
+               ,[partnerId]
+               ,[customerId]
+               ,[customerName]
+               ,[customerDomainName]
+               ,[customerCountry]
+               ,[invoiceNumber]
+               ,[mpnId]
+               ,[resellerMpnId]
+               ,[orderId]
+               ,[orderDate]
+               ,[productId]
+               ,[skuId]
+               ,[availabilityId]
+               ,[productName]
+               ,[skuName]
+               ,[chargeType]
+               ,[unitPrice]
+               ,[effectiveUnitPrice]
+               ,[unitType]
+               ,[quantity]
+               ,[subtotal]
+               ,[taxTotal]
+               ,[totalForCustomer]
+               ,[currency]
+               ,[publisherName]
+               ,[publisherId]
+               ,[subscriptionDescription]
+               ,[subscriptionId]
+               ,[chargeStartDate]
+               ,[chargeEndDate]
+               ,[termAndBillingCycle]
+               ,[alternateId]
+               ,[priceAdjustmentDescription]
+               ,[discountDetails]
+               ,[pricingCurrency]
+               ,[pcToBCExchangeRate]
+               ,[pcToBCExchangeRateDate]
+               ,[billableQuantity]
+               ,[meterDescription]
+               ,[billingFrequency]
+               ,[reservationOrderId]
+               ,[invoiceLineItemType]
+               ,[billingProvider]
+               ,[RegDate]
+               ,[RequestUri]
+               ,[ResponseData])
+         VALUES
+               (%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s
+               ,%s)
+
+    """
+

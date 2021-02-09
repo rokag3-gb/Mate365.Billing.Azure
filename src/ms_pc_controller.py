@@ -136,30 +136,52 @@ def get_azure_daily_usage(tenant: str, subscription: str, t_date: datetime, para
 
 
 # 년-월 입력으로 해당 인보이스 받아옴
-def search_invoice(t_date: datetime):
+def search_invoice(invoice_id: str = None, t_date: datetime = None):
     all_invoice_list = pc_request.invoice_list()['items']
-    t_invoice_list = []
-    for invoice in all_invoice_list:
-        _invoice_date = datetime.strptime(invoice['invoiceDate'], '%Y-%m-%dT%H:%M:%S%z')  # 2021-01-02T00:00:00Z
-        if _invoice_date.year == t_date.year and _invoice_date.month == t_date.month:
-            t_invoice_list.append(invoice)
+    if (t_date is None) and (invoice_id is None):
+        return all_invoice_list
 
-    return t_invoice_list
+    if invoice_id is not None:
+        t_invoice_list = []
+        for invoice in all_invoice_list:
+            if invoice['id'] == invoice_id:
+                t_invoice_list.append(invoice)
+        all_invoice_list = t_invoice_list
+
+    if t_date is not None:
+        t_invoice_list = []
+        for invoice in all_invoice_list:
+            _invoice_date = datetime.strptime(invoice['invoiceDate'][0:10], '%Y-%m-%d')  # 2021-01-02T00:00:00Z
+            if _invoice_date.year == t_date.year and _invoice_date.month == t_date.month:
+                t_invoice_list.append(invoice)
+        all_invoice_list = t_invoice_list
+
+    return all_invoice_list
 
 
 # 인보이스ID 입력으로 인보이스 자세히(모든 사용내역) 받아옴
-def get_invoice_detail(invoice_id: str):
-    param = {'provider': 'azure',
+def get_invoice_detail(invoice_id: str, provider: str = 'azure'):
+    # provider는 ['office', 'azure', 'onetime']만 받음.
+    provider_list = ['office', 'azure', 'onetime']
+    if provider not in provider_list:
+        LOGGER.error(f'잘못된 Provider 입력 : {provider} | 허용 Provider : {provider_list}')
+        LOGGER.exception(f'잘못된 Provider 입력 : {provider}')
+        raise ValueError
+
+    param = {'provider': provider,
              'invoicelineitemtype': 'billinglineitems',
              'currencycode': 'kwd',
              'size': 2000}
     items = pc_request.invoice_billing_line_items(invoice=invoice_id, param=param)
     # TODO: totalCount가 2000 이상일경우 seekOperation=Next 을 param으로 추가호출
     # TODO: 2000이상인 케이스를 TEST할 수 없어서, 추후 업데이트 ( 2000이상일경우 raise)
-    if items['totalCount'] > 2000:
+    if int(items['totalCount']) > 2000:
         LOGGER.exception(f'Invoice Usage Items가 2000개를 넘음. Response : {items}')
         raise
-    return items['items']
+    if int(items['totalCount']) != len(items['items']):
+        LOGGER.exception(f'Invoice Usage Items가 2000개를 넘음. Response : {items}')
+        raise
+    return items
 
 
 # MS Product 가격 업데이트    filter필요
@@ -168,7 +190,10 @@ def get_ms_product_price():
 
 
 # Azure 가격 업데이트    리전 필요
-def get_azure_resource_price(region='KR', currency='KRW'):
-    rates = pc_request.ratecards(param={'currency': currency, 'region': region})
+def get_azure_resource_price(region='KR', currency='KRW', is_shared=False):
+    if is_shared:
+        rates = pc_request.ratecards_shared(param={'currency': currency, 'region': region})
+    else:
+        rates = pc_request.ratecards(param={'currency': currency, 'region': region})
     LOGGER.debug(f'Meter len : {len(rates["meters"])}')
     return rates

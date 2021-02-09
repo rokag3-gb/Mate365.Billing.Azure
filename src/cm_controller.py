@@ -11,6 +11,7 @@ from src.logger.logger import LOGGER
 
 
 MS_TIME_FORMATTING = '%Y-%m-%dT%H:%M:%S%z'
+MS_TIME_FORMATTING_WITHOUT_ZONE = '%Y-%m-%dT%H:%M:%S'
 
 
 def get_target_tenant_list():
@@ -70,8 +71,8 @@ def save_azure_customer_software(software_info, commit=True):
                      software['entitlementType'], datetime.strptime(software['expiryDate'], MS_TIME_FORMATTING), datetime.now(), None, None)
             insert_data.append(_data)
     db.insert_data(sql, insert_data, auto_commit=commit)
-    # if commit:
-    #     db.commit()
+    if commit:
+        db.commit()
     db.close()
 
 
@@ -102,9 +103,9 @@ def save_azure_customer_ri(ri_info, commit=True):
                      ri['skuId'], ri['entitlementType'], ri['fulfillmentState'],
                      datetime.strptime(ri['expiryDate'], MS_TIME_FORMATTING), datetime.now(), None, None)
             insert_data.append(_data)
-    db.insert_data(sql, insert_data, auto_commit=commit)
-    # if commit:
-    #     db.commit()
+    db.insert_data(sql, insert_data)
+    if commit:
+        db.commit()
     db.close()
 
 
@@ -126,6 +127,7 @@ def save_azure_utilization_user(tenant: str, subscription: str, start_time: date
     db.insert_data(sql, insert_data)
     if commit:
         db.commit()
+    db.close()
 
 
 def get_azure_utilization_user(tenant: str, subscription: str,
@@ -152,9 +154,10 @@ def remove_azure_utilization_user(tenant: str, subscription: str,
     return db.delete_data(sql, delete_data)
 
 
-def save_ratecard(rates, region='kr', currency='KRW', commit=True):
+def save_ratecard(rates, region='kr', currency='KRW', is_shared=False, commit=True):
     """
-
+    DATABASE의 [Azure_Meter] : 파트너가격
+    DATABASE의 [Azure_Meter_Listprice] : 소비자가격(is_shared)
     :param rates:
     :param region:
     :param currency:
@@ -164,15 +167,22 @@ def save_ratecard(rates, region='kr', currency='KRW', commit=True):
     db = DBConnect.get_instance()
     # 일괄 삭제 후, Insert
     # 일괄삭제
-    del_azure_meter_sql = """DELETE FROM [dbo].[Azure_Meter]"""
+    if is_shared:
+        del_azure_meter_sql = db.get_sql().DELETE_AZURE_RATECARD_SHARED
+        # del_azure_offerterm_sql = db.get_sql().DELETE_AZURE_OFFERTERM_SHARED
+        insert_azure_meter_sql = db.get_sql().INSERT_AZURE_METER_SHARED
+        # insert_azure_offerterm_sql = db.get_sql().INSERT_OFFERTERM_SHARED
+    else:
+        del_azure_meter_sql = db.get_sql().DELETE_AZURE_RATECARD
+        del_azure_offerterm_sql = db.get_sql().DELETE_AZURE_OFFERTERM
+        insert_azure_meter_sql = db.get_sql().INSERT_AZURE_METER
+        insert_azure_offerterm_sql = db.get_sql().INSERT_OFFERTERM
+        affected = db.delete_data(del_azure_offerterm_sql)
+        LOGGER.debug(f'del_azure_offerterm_sql : {affected}')
     affected = db.delete_data(del_azure_meter_sql)
     LOGGER.debug(f'del_azure_meter_sql : {affected}')
-    del_azure_offerterm_sql = """DELETE FROM [dbo].[Azure_OfferTerm]"""
-    affected = db.delete_data(del_azure_offerterm_sql)
-    LOGGER.debug(f'del_azure_offerterm_sql : {affected}')
     # 일괄 insert
-    insert_azure_meter_sql = db.get_sql().INSERT_AZURE_METER
-    insert_azure_offerterm_sql = db.get_sql().INSERT_OFFERTERM
+
     insert_data_azure_meter = []
     # METER INSERT
     for meter in rates['meters']:
@@ -184,39 +194,164 @@ def save_ratecard(rates, region='kr', currency='KRW', commit=True):
     db.insert_data(insert_azure_meter_sql, insert_data_azure_meter)
 
     # OFFERTERM INSERT
-    insert_data_azure_offerterm = []
-    for offer in rates['offerTerms']:
-        if 'excludedMeterIds' in offer and len(offer['excludedMeterIds']):
-            for meterid in offer['excludedMeterIds']:
+    if not is_shared:
+        insert_data_azure_offerterm = []
+        for offer in rates['offerTerms']:
+            if 'excludedMeterIds' in offer and len(offer['excludedMeterIds']):
+                for meterid in offer['excludedMeterIds']:
+                    # [currency],[region],[name],[discount],[excludedMeterId],[effectiveDate],[RegDate]
+                    _data = (rates['currency'], region, offer['name'], offer['discount'], meterid,
+                             offer['effectiveDate'], datetime.now())
+                    insert_data_azure_offerterm.append(_data)
+            else:
                 # [currency],[region],[name],[discount],[excludedMeterId],[effectiveDate],[RegDate]
-                _data = (rates['currency'], region, offer['name'], offer['discount'], meterid,
+                _data = (rates['currency'], region, offer['name'], offer['discount'], str(offer['excludedMeterIds']),
                          offer['effectiveDate'], datetime.now())
                 insert_data_azure_offerterm.append(_data)
-        else:
-            # [currency],[region],[name],[discount],[excludedMeterId],[effectiveDate],[RegDate]
-            _data = (rates['currency'], region, offer['name'], offer['discount'], str(offer['excludedMeterIds']),
-                     offer['effectiveDate'], datetime.now())
-            insert_data_azure_offerterm.append(_data)
-    db.insert_data(insert_azure_offerterm_sql, insert_data_azure_offerterm)
+        db.insert_data(insert_azure_offerterm_sql, insert_data_azure_offerterm)
     if commit:
         db.commit()
     db.close()
 
 
-def save_invoice(data: dict):
+def save_invoice(data: list, commit=True):
     db = DBConnect.get_instance()
     # insert, 인보이스 존재시 오류
     sql = db.get_sql().INSERT_AZURE_INVOICE
-    insert_data = [(data['id'], datetime.strptime(data['invoiceDate'], MS_TIME_FORMATTING), datetime.strptime(data['billingPeriodStartDate'], MS_TIME_FORMATTING),
-                    datetime.strptime(data['billingPeriodEndDate'], MS_TIME_FORMATTING), data['totalCharges'], data['paidAmount'],
-                    data['currencyCode'], data['currencySymbol'], data['pdfDownloadLink'], data['invoiceType'], data['documentType'],
-                    data['state'], json.dumps(data['links']), datetime.now())]
-    pass
+    insert_data = []
+    # [invoiceDate], [invoiceId], [billingPeriodStartDate], [billingPeriodEndDate], [totalCharges], [paidAmount],
+    # [currencyCode], [currencySymbol], [pdfDownloadLink], [invoiceType], [documentType], [state], [links_self_uri],
+    # [RegDate], [RequestUri], [ResponseData]
+    for invoice in data:
+        if len(invoice['invoiceDate']) > 20:
+            invoice['invoiceDate'] = invoice['invoiceDate'][:19] + 'Z'
+        if len(invoice['billingPeriodStartDate']) > 20:
+            invoice['billingPeriodStartDate'] = invoice['billingPeriodStartDate'][:19] + 'Z'
+        if len(invoice['billingPeriodEndDate']) > 20:
+            invoice['billingPeriodEndDate'] = invoice['billingPeriodEndDate'][:19] + 'Z'
+        insert_data.append((datetime.strptime(invoice['invoiceDate'], MS_TIME_FORMATTING), invoice['id'],
+                            datetime.strptime(invoice['billingPeriodStartDate'], MS_TIME_FORMATTING),
+                            datetime.strptime(invoice['billingPeriodEndDate'], MS_TIME_FORMATTING),
+                            invoice['totalCharges'], invoice['paidAmount'],
+                            invoice['currencyCode'], invoice['currencySymbol'], invoice['pdfDownloadLink'],
+                            invoice['invoiceType'], invoice['documentType'],
+                            invoice['state'], json.dumps(invoice['links']), datetime.now(), None, None))
+    db.insert_data(sql=sql, data=insert_data)
+    if commit:
+        db.commit()
+    db.close()
 
 
-def save_invoice_detail(details: list):
+def save_invoice_detail_azure(invoice_id: str, detail: dict):
     db = DBConnect.get_instance()
-    # TODO: 바뀐 스키마에 대한 sql 수정
+
+    detail_item = detail['items']
+    invoice_id = invoice_id
+
+    # 존재하는지 확인. 있으면 Delete
+    is_exist_sql = "SELECT 1 AS [count] FROM [dbo].[Azure_Invoice_Detail_Azure] WHERE [invoiceId] = %s AND [billingProvider] = %s"
+    if db.select_data(is_exist_sql, (invoice_id, 'azure')):
+        invoice_detail_delete_sql = "DELETE FROM [dbo].[Azure_Invoice_Detail_Azure] WHERE [invoiceId] = %s AND [billingProvider] = %s"
+        db.delete_data(invoice_detail_delete_sql, (invoice_id, 'azure'))
+
+    insert_sql = db.get_sql().INSERT_AZURE_INVOICE_DETAIL_AZURE
+    insert_data = []
+    # [invoiceId], [sku], [includedQuantity], [overageQuantity], [listPrice], [currency], [pretaxCharges],
+    # [taxAmount], [postTaxTotal], [preTaxEffectiveRate], [postTaxEffectiveRate], [chargeType],
+    # [invoiceLineItemType], [partnerId], [partnerName], [partnerBillableAccountId], [customerId],
+    # [domainName], [customerCompanyName], [mpnId], [tier2MpnId], [invoiceNumber], [subscriptionId],
+    # [subscriptionName], [subscriptionDescription], [billingCycleType], [orderId], [serviceName],
+    # [serviceType], [resourceGuid], [resourceName], [region], [consumedQuantity], [chargeStartDate],
+    # [chargeEndDate], [unit], [billingProvider], [RegDate], [RequestUri], [ResponseData]
+    for items in detail_item:
+        insert_data.append((items['invoiceNumber'], items['sku'], items['includedQuantity'], items['overageQuantity'],
+                            items['listPrice'], items['currency'], items['pretaxCharges'], items['taxAmount'],
+                            items['postTaxTotal'], items['pretaxEffectiveRate'], items['postTaxEffectiveRate'],
+                            items['chargeType'], items['invoiceLineItemType'], items['partnerId'], items['partnerName'],
+                            items['partnerBillableAccountId'], items['customerId'], items['domainName'],
+                            items['customerCompanyName'], items['mpnId'], items['tier2MpnId'], items['invoiceNumber'],
+                            items['subscriptionId'], items['subscriptionName'], items['subscriptionDescription'],
+                            items['billingCycleType'], items['orderId'], items['serviceName'], items['serviceType'],
+                            items['resourceGuid'], items['resourceName'], items['region'], items['consumedQuantity'],
+                            items['chargeStartDate'], items['chargeEndDate'], items['unit'],
+                            items['billingProvider'], datetime.now(), detail['links']['self']['uri'], None))
+    db.insert_data(insert_sql, insert_data)
+
+
+def save_invoice_detail_office(invoice_id: str, detail: dict):
+    db = DBConnect.get_instance()
+
+    detail_item = detail['items']
+    invoice_id = invoice_id
+    provider = 'office'
+    # 존재하는지 확인. 있으면 Delete
+    is_exist_sql = "SELECT 1 AS [count] FROM [dbo].[Azure_Invoice_Detail_Office] WHERE [invoiceId] = %s AND [billingProvider] = %s"
+    if db.select_data(is_exist_sql, (invoice_id, provider)):
+        invoice_detail_delete_sql = "DELETE FROM [dbo].[Azure_Invoice_Detail_Office] WHERE [invoiceId] = %s AND [billingProvider] = %s"
+        db.delete_data(invoice_detail_delete_sql, (invoice_id, provider))
+
+    insert_sql = db.get_sql().INSERT_AZURE_INVOICE_DETAIL_OFFICE
+    insert_data = []
+    # [invoiceId], [partnerId], [customerId], [customerName], [mpnId], [tier2MpnId], [orderId], [invoiceNumber],
+    # [subscriptionId], [syndicationPartnerSubscriptionNumber], [offerId], [durableOfferId], [offerName], [domainName],
+    # [billingCycleType], [subscriptionName], [subscriptionDescription], [chargeStartDate], [chargeEndDate],
+    # [chargeType], [unitPrice], [quantity], [amount], [totalOtherDiscount], [subtotal], [tax], [totalForCustomer],
+    # [currency], [invoiceLineItemType], [billingProvider], [RegDate], [RequestUri], [ResponseData]
+    for items in detail_item:
+        insert_data.append((items['invoiceNumber'], items['partnerId'], items['customerId'], items['customerName'],
+                            items['mpnId'], items['tier2MpnId'], items['orderId'], items['invoiceNumber'],
+                            items['subscriptionId'], items['syndicationPartnerSubscriptionNumber'], items['offerId'],
+                            items['durableOfferId'], items['offerName'], items['domainName'], items['billingCycleType'],
+                            items['subscriptionName'], items['subscriptionDescription'], items['chargeStartDate'],
+                            items['chargeEndDate'], items['chargeType'], items['unitPrice'], items['quantity'],
+                            items['amount'], items['totalOtherDiscount'], items['subtotal'],
+                            items['tax'], items['totalForCustomer'], items['currency'], items['invoiceLineItemType'],
+                            items['billingProvider'], datetime.now(), detail['links']['self']['uri'], None))
+    db.insert_data(insert_sql, insert_data)
+
+
+def save_invoice_detail_onetime(invoice_id: str, detail: dict):
+    db = DBConnect.get_instance()
+
+    detail_item = detail['items']
+    invoice_id = invoice_id
+    provider = 'one_time'
+    # 존재하는지 확인. 있으면 Delete
+    is_exist_sql = "SELECT 1 AS [count] FROM [dbo].[Azure_Invoice_Detail_Onetime] WHERE [invoiceId] = %s AND [billingProvider] = %s"
+    if db.select_data(is_exist_sql, (invoice_id, provider)):
+        invoice_detail_delete_sql = "DELETE FROM [dbo].[Azure_Invoice_Detail_Onetime] WHERE [invoiceId] = %s AND [billingProvider] = %s"
+        db.delete_data(invoice_detail_delete_sql, (invoice_id, provider))
+
+    insert_sql = db.get_sql().INSERT_AZURE_INVOICE_DETAIL_ONETIME
+    insert_data = []
+    # [invoiceId], [partnerId], [customerId], [customerName], [customerDomainName], [customerCountry], [invoiceNumber],
+    # [mpnId], [resellerMpnId], [orderId], [orderDate], [productId], [skuId], [availabilityId], [productName],
+    # [skuName], [chargeType], [unitPrice], [effectiveUnitPrice], [unitType], [quantity], [subtotal], [taxTotal],
+    # [totalForCustomer], [currency], [publisherName], [publisherId], [subscriptionDescription], [subscriptionId],
+    # [chargeStartDate], [chargeEndDate], [termAndBillingCycle], [alternateId], [priceAdjustmentDescription],
+    # [discountDetails], [pricingCurrency], [pcToBCExchangeRate], [pcToBCExchangeRateDate], [billableQuantity],
+    # [meterDescription], [billingFrequency], [reservationOrderId], [invoiceLineItemType], [billingProvider],
+    # [RegDate], [RequestUri], [ResponseData])
+    for items in detail_item:
+        items['orderDate'] = items['orderDate'][:19] + 'Z'
+        insert_data.append((items['invoiceNumber'], items['partnerId'], items['customerId'], items['customerName'],
+                            items['customerDomainName'], items['customerCountry'], items['invoiceNumber'], items['mpnId'],
+                            items['resellerMpnId'], items['orderId'], datetime.strptime(items['orderDate'], MS_TIME_FORMATTING),
+                            items['productId'], items['skuId'], items['availabilityId'], items['productName'],
+                            items['skuName'], items['chargeType'], items['unitPrice'],
+                            items['effectiveUnitPrice'], items['unitType'], items['quantity'], items['subtotal'],
+                            items['taxTotal'], items['totalForCustomer'], items['currency'],
+                            items['publisherName'], items['publisherId'], items['subscriptionDescription'], items['subscriptionId'],
+                            datetime.strptime(items['chargeStartDate'], MS_TIME_FORMATTING), datetime.strptime(items['chargeEndDate'], MS_TIME_FORMATTING),
+                            items['termAndBillingCycle'],
+                            items['alternateId'], items['priceAdjustmentDescription'], items['discountDetails'],
+                            items['pricingCurrency'], items['pcToBCExchangeRate'],
+                            datetime.strptime(items['pcToBCExchangeRateDate'], MS_TIME_FORMATTING_WITHOUT_ZONE),
+                            items['billableQuantity'],
+                            items['meterDescription'], items['billingFrequency'],
+                            items['reservationOrderId'], items['invoiceLineItemType'], items['billingProvider'],
+                            datetime.now(), detail['links']['self']['uri'], None))
+    db.insert_data(insert_sql, insert_data)
 
 
 def save_ms_product_price(data):

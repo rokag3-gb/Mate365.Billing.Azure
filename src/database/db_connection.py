@@ -96,6 +96,7 @@ class DBConnect:
                 if auto_commit:
                     self._client.commit()
                 cursor.close()
+                LOGGER.debug('Insert Success')
                 return affected
                 # return affected
             # TODO: 나올수 있는 에러 정리 / 처리 ( Exception )
@@ -132,6 +133,7 @@ class DBConnect:
                 if auto_commit:
                     self._client.commit()
                 cursor.close()
+                LOGGER.debug('Delete Success')
                 return affected
             # TODO: 나올수 있는 에러 정리 / 처리 ( Exception )
             except sqllib.Error as e:
@@ -145,7 +147,7 @@ class DBConnect:
         raise sqllib.DatabaseError
 
     @_connect_check
-    def select_data(self, sql, data=None) -> dict:
+    def select_data(self, sql, data: tuple = None) -> dict:
         '''
         :param sql : str
         :param data: (col1, col2, col2, ...), ...  tuple
@@ -168,6 +170,7 @@ class DBConnect:
                 cursor.execute(sql, data)
                 rows = cursor.fetchall()
                 cursor.close()
+                LOGGER.debug('Select Success')
                 return rows
             # TODO: 나올수 있는 에러 정리 / 처리 ( Exception )
             except sqllib.Error as e:
