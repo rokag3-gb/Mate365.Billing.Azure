@@ -15,11 +15,13 @@ def get_default_logger(logger_name: str, level: logging = logging.DEBUG):
     formatter = logging.Formatter(
         '%(asctime)s - %(filename)s : %(lineno)d line - %(funcName)s - %(levelname)s - %(message)s')
 
-    log_stream_handler = logging.StreamHandler()
-    log_stream_handler.setFormatter(formatter)
     # Teams Handler
     test_url = os.environ['TEAMS_WEBHOOK_URL']
-    teams_handler = TeamsHandler(url=test_url, level=logging.ERROR)
+    teams_handler = TeamsHandler(url=test_url, level=logging.WARNING)
+    teams_handler.setFormatter(formatter)
+
+    log_stream_handler = logging.StreamHandler()
+    log_stream_handler.setFormatter(formatter)
     # Create logger
     logger = logging.getLogger(logger_name)
     logger.addHandler(teams_handler)
