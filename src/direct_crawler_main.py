@@ -101,8 +101,8 @@ def invoice_crawler(invoice_id: str = None, t_date: datetime = None):
         LOGGER.exception(f'인보이스가 없음. 파트너센터 청구 유무 확인')
         raise
 
-    # TODO: invoice record DB 저장
-    # save_invoice(invoice_list)
+    # invoice record DB 저장
+    save_invoice(invoice_list)
     # #######################################################################
 
     # INVOICE DETAIL ########################################################
