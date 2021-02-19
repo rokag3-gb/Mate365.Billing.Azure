@@ -102,7 +102,8 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
 """
     INSERT_AZURE_CUSTOMER_SUBSCRIPTION = """
     INSERT INTO [dbo].[Azure_Customer_Subscription]
-           ([tenantId]
+           ([UsageDate]
+           ,[tenantId]
            ,[subscriptionId]
            ,[offerId]
            ,[entitlementId]
@@ -138,6 +139,7 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,[ResponseData])
      VALUES
            (%s
+           ,%s
            ,%s
            ,%s
            ,%s
