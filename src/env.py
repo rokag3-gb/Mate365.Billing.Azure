@@ -56,7 +56,6 @@ class AzurePartnerCenterEnv:
         self.commit = True if self.stage == 'prod' else False
         # Partercenter APP AUTH
         self.appid = os.environ['APPID']
-        self.secret = os.environ['SECRET']
         if args.app_secret:
             self.secret = args.app_secret
         else:
