@@ -40,11 +40,11 @@ def save_azure_customer_subscription(subscription_info, commit=is_commit):
     insert_data = []
     for tenant in subscription_info:
         for subscription in subscription_info[tenant]:
-            # [tenantId],[subscriptionId],[offerId],[entitlementId],[offerName],[friendlyName],[quantity],[unitType],[hasPurchasableAddons],
+            # [UsageDate], [tenantId],[subscriptionId],[offerId],[entitlementId],[offerName],[friendlyName],[quantity],[unitType],[hasPurchasableAddons],
             # [creationDate],[effectiveStartDate],[commitmentEndDate],[status],[autoRenewEnabled],[isTrial],[billingType],[billingCycle],[actions],
             # [termDuration],[isMicrosoftProduct],[attentionNeeded],[actionTaken],[contractType],[links_offer_uri],[links_product_uri],[links_sku_uri],
             # [links_availability_uri],[links_self_uri],[orderId],[attributes_etag],[attributes_objectType],[RegDate],[RequestUri],[ResponseData]
-            _data = (tenant, subscription['id'], subscription['offerId'], subscription['entitlementId'], subscription['offerName'], subscription['friendlyName'],
+            _data = (datetime.now(), tenant, subscription['id'], subscription['offerId'], subscription['entitlementId'], subscription['offerName'], subscription['friendlyName'],
                      subscription['quantity'], subscription['unitType'], subscription['hasPurchasableAddons'], subscription['creationDate'],
                      subscription['effectiveStartDate'], subscription['commitmentEndDate'], subscription['status'], subscription['autoRenewEnabled'],
                      subscription['isTrial'], subscription['billingType'], subscription['billingCycle'], json.dumps(subscription['actions']), subscription['termDuration'],

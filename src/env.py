@@ -47,7 +47,7 @@ class AzurePartnerCenterEnv:
         if args.database_password:
             self.database_password = args.database_password
         else:
-            self.database_password = os.environ['DATABASE_TYPE']
+            self.database_password = os.environ['DATABASE_PASSWORD']
         self.database_type = os.environ['DATABASE_TYPE']
         self.database_host = os.environ['DATABASE_HOST']
         self.database_port = os.environ['DATABASE_PORT']
@@ -96,4 +96,4 @@ class AzurePartnerCenterEnv:
         self.__access_token = r.json()['access_token']
 
 
-# ENV = AzurePartnerCenterEnv.instance()
+AzurePartnerCenterEnv.instance()
