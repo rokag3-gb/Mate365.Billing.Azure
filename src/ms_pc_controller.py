@@ -65,7 +65,7 @@ def filter_azure_subscription(subscription_info_list: dict) -> dict:
     result = {}
     for tenant in subscription_info_list:
         for subscription_info in subscription_info_list[tenant]:
-            if subscription_info['offerId'] == 'MS-AZR-0146P':
+            if subscription_info['offerId'] == 'MS-AZR-0146P' or subscription_info['offerId'] == 'MS-AZR-0145P':
                 if tenant in result:
                     result[tenant].append(subscription_info)
                 else:

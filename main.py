@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from src.env import AzurePartnerCenterEnv
-from src.direct_crawler_main import daily_usage_cralwer, invoice_crawler, azure_csp_price_crawler
-
+from src.direct_crawler_main import daily_usage_crawler, invoice_crawler, azure_csp_price_crawler, \
+    daily_usage_update_crawler
 
 if __name__ == '__main__':
     # 환경변수 설정
@@ -10,7 +10,11 @@ if __name__ == '__main__':
 
     # 일별 사용량 수집
     if env.daily_usage:
-        daily_usage_cralwer()
+        daily_usage_crawler()
+        # TODO: 완료 메시지
+
+    if env.daily_usage_update:
+        daily_usage_update_crawler(period=env.update_period)
         # TODO: 완료 메시지
 
     # 월별 인보이스 수집

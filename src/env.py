@@ -4,7 +4,6 @@ import sys
 
 import requests
 
-from src.logger.logger import LOGGER
 from src.tool.dotenv import get_variables_from_dotenv
 
 
@@ -22,19 +21,22 @@ class AzurePartnerCenterEnv:
         return cls.__instance
 
     def __init__(self) -> None:
-        LOGGER.debug('DEV ENVIRONMENTS SETTING')
         # .env 파일 존재시, 환경변수 업데이트 후 불러오기.
         parser = argparse.ArgumentParser()
         parser.add_argument('-f', '--file', action='store_true', help='.env파일을 통한 환경변수 등록')
         parser.add_argument('--database-password', type=str, help='')
         parser.add_argument('--app-secret', type=str, help='')
         parser.add_argument('--daily-usage', action='store_true', help='일별 사용량 수집')
+        parser.add_argument('--daily-usage-update', action='store_true', help='일별 사용량 수집에 대한 과거 데이터 업데이트')
+        parser.add_argument('--update-period', type=int, help='업데이트 기간(어제날짜부터의 기간)')
         parser.add_argument('--monthly-invoice', action='store_true', help='월별 인보이스 수집')
         parser.add_argument('--price-update', action='store_true', help='Azure 제품군 가격 업데이트')
         
         args = parser.parse_args()
         # 실행 로직 선택(bool)
         self.daily_usage = args.daily_usage
+        self.daily_usage_update = args.daily_usage_update
+        self.update_period = args.update_period
         self.monthly_invoice = args.monthly_invoice
         self.price_update = args.price_update
         # 파일로 환경변수 세팅
