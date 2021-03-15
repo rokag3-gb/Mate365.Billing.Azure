@@ -121,6 +121,7 @@ def daily_usage_update_crawler(tenant_list: list = None, t_date: datetime = None
                           day=today.day) - timedelta(days=1)
 
     for i in range(period):
+        LOGGER.info(f'Update - {t_date}')
         azure_daily_usages = []  # 모든 구독에 대한 사용량 [(tenant, subscription, [usage list]) ...]
         for t in azure_subscriptions:
             for s in azure_subscriptions[t]:
