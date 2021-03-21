@@ -6,7 +6,7 @@
 trigger: none
 schedules:
 - cron: "0 9 10 * *"
-  displayName: Every month at 10th 9 am(utc) (매월 10일 오후 6시)
+  displayName: Every month at 10th 8 am(utc) (매월 10일 오후 5시)
   branches:
     include:
     - develop
