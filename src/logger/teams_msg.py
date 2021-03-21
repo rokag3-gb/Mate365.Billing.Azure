@@ -2,7 +2,7 @@ import os
 
 import pymsteams
 
-myTeamsMessage = pymsteams.connectorcard(os.environ['TEAMS_WEBHOOK_URL'])
+myTeamsMessage = pymsteams.connectorcard(os.environ['TEAMS_WEBHOOK_INFO_URL'])
 
 
 def send_teams_msg(msg: str):
