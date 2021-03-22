@@ -28,9 +28,9 @@ https://docs.microsoft.com/ko-kr/partner/develop/get-a-price-sheet
 'companyName': 'CloudMatePreview_2',
 ```
 
-# 구현
+# 실행
 ## Setting
-- Project root 폴더에 .env 파일 생성 및 세팅 ex)
+- **로컬 실행시** : `Project root` 폴더에 .env 파일 생성 및 세팅 ex)
 ```
 APPID=
 SECRET=
@@ -42,8 +42,27 @@ DATABASE_TYPE=
 DATABASE_HOST=
 DATABASE_PORT=
 DATABASE_USER=
-DATABASE_PASSWORD=!
+DATABASE_PASSWORD=
 DATABASE_NAME=
 
+TEAMS_WEBHOOK_LOG_URL=
+TEAMS_WEBHOOK_INFO_URL=
 ```
-- `STAGE` 환경변수를 통해 dev, prod 구분
+- `STAGE` **환경변수**를 통해 dev, prod 구분
+  - dev 환경에서 Database Commit이 일어나지않음.
+
+- **prod 환경 실행 시**: 위 변수들을 환경변수로 처리.
+
+## 실행방법
+- 로컬 환경
+  ```
+  python main.py -f --daily-usage  // 일별사용량 수집
+  python main.py -f --daily-usage-update --update-period 10 // 일별사용량 '10일이전 ~ 오늘' 업데이트
+  python main.py -f --monthly-invoice  // 이번달 인보이스 업데이트
+  python main.py -f --price-update  // azure price 업데이트
+  ```
+- Prod 환경
+  - DB password, ad secret의 경우 Parameter로 입력. (pipeline yaml 참조)
+  ```
+  python main.py --daily-usage --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
+  ``` 
