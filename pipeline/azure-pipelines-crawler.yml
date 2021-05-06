@@ -9,30 +9,21 @@ schedules:
   displayName: Every day at 9 am(utc) (오후 6시)
   branches:
     include:
+    - main
     - develop
   always: true
 
 pool:
   vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    sandbox:
-      configuration: sandboxDataJob
-    production:
-      configuration: prodDataJob
 
 variables:
 - name: pythonVersion
   value: '3.8'
 - group: Billing.AzureCrawler.vg
-- ${{ if eq(variables.configuration, 'sandboxDataJob') }}:
+- ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
   - group: Billing.AzureSandBoxCrawler.vg
-  - name: pythonVersion
-    value: '3.8'
-- ${{ if eq(variables.configuration, 'prodDataJob') }}:
+- ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
   - group: Billing.AzureCrawler.vg
-  - name: pythonVersion
-    value: '3.9'
 
 steps:
 - task: UsePythonVersion@0
