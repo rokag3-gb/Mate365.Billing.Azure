@@ -24,10 +24,12 @@ strategy:
 variables:
   ${{ if eq(variables['Agent.JobName'], 'sandboxData') }}:
     - group: Billing.AzureSandBoxCrawler.vg
+    - name: pythonVersion
+      value: '3.8'
   ${{ if eq(variables['Agent.JobName'], 'prodData') }}:
     - group: Billing.AzureCrawler.vg
-  - name: pythonVersion
-    value: '3.8'
+    - name: pythonVersion
+      value: '3.8'
 
 steps:
 - task: UsePythonVersion@0
