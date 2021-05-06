@@ -18,12 +18,15 @@ strategy:
   matrix:
     sandboxData:
       variableGroup: Billing.AzureSandBoxCrawler.vg
+      pythonVersion: '3.8'
     prodData:
       variableGroup: Billing.AzureCrawler.vg
+      pythonVersion: '3.8'
 
 variables:
 - group: $(variableGroup)
-  pythonVersion: '3.8'
+- name: pythonVersion
+  value: '3.8'
 
 steps:
 - task: UsePythonVersion@0
