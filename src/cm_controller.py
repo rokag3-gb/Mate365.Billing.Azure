@@ -5,7 +5,7 @@ Data와 Database간 컨트롤
 # CM database를 통한 Tenant list 받아오기.
 import json
 from datetime import datetime, timedelta
-from dateutil.parser import parse
+from dateutil.parser import parse, isoparse
 
 from src.database.db_connection import DBConnect
 from src.env import AzurePartnerCenterEnv
@@ -47,7 +47,7 @@ def save_azure_customer_subscription(subscription_info, commit=is_commit):
             # [links_availability_uri],[links_self_uri],[orderId],[attributes_etag],[attributes_objectType],[RegDate],[RequestUri],[ResponseData]
             _data = (datetime.now(), tenant, subscription['id'], subscription['offerId'], subscription['entitlementId'] if 'entitlementId' in subscription else subscription['id'], subscription['offerName'], subscription['friendlyName'],
                      subscription['quantity'], subscription['unitType'], subscription['hasPurchasableAddons'], subscription['creationDate'],
-                     subscription['effectiveStartDate'], subscription['commitmentEndDate'], subscription['status'], subscription['autoRenewEnabled'],
+                     subscription['effectiveStartDate'], isoparse(subscription['commitmentEndDate']), subscription['status'], subscription['autoRenewEnabled'],
                      subscription['isTrial'], subscription['billingType'], subscription['billingCycle'], json.dumps(subscription['actions']) if 'actions' in subscription else None, subscription['termDuration'],
                      subscription['isMicrosoftProduct'], subscription['attentionNeeded'], subscription['actionTaken'], subscription['contractType'],
                      subscription['links']['offer']['uri'] if 'offer' in subscription['links'] else None, subscription['links']['product']['uri'], subscription['links']['sku']['uri'],

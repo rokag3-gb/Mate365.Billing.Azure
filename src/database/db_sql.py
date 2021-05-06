@@ -150,7 +150,7 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,%s
            ,%s
            ,%s
-           ,try_convert(datetime, %s)
+           ,%s
            ,%s
            ,%s
            ,%s
