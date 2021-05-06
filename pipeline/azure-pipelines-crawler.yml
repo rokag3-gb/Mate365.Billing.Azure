@@ -12,20 +12,18 @@ schedules:
     - develop
   always: true
 
-
-variables:
-  pythonVersion: '3.8'
-
 pool:
   vmImage: 'ubuntu-latest'
 strategy:
   matrix:
     sandboxData:
-      variables:
-      - group: Billing.AzureSandBoxCrawler.vg
+      variableGroup: Billing.AzureSandBoxCrawler.vg
     prodData:
-      variables:
-      - group: Billing.AzureCrawler.vg
+      variableGroup: Billing.AzureCrawler.vg
+
+variables:
+- group: $(variableGroup)
+  pythonVersion: '3.8'
 
 steps:
 - task: UsePythonVersion@0
