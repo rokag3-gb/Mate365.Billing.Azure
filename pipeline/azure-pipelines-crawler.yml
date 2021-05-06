@@ -15,6 +15,7 @@ schedules:
 
 variables:
 - group: Billing.AzureCrawler.vg
+- group: Billing.AzureSandBoxCrawler.vg
 
 pool:
   vmImage: 'ubuntu-latest'
