@@ -16,17 +16,19 @@ pool:
   vmImage: 'ubuntu-latest'
 strategy:
   matrix:
-    sandboxData:
+    sandbox:
+      configuration: sandboxDataJob
       variableGroup: Billing.AzureSandBoxCrawler.vg
-    prodData:
+    production:
+      configuration: prodDataJob
       variableGroup: Billing.AzureCrawler.vg
 
 variables:
-  ${{ if eq(variables['Agent.JobName'], 'sandboxData') }}:
+  ${{ if eq(variables['configuration'], 'sandboxDataJob') }}:
     - group: Billing.AzureSandBoxCrawler.vg
     - name: pythonVersion
       value: '3.8'
-  ${{ if eq(variables['Agent.JobName'], 'prodData') }}:
+  ${{ if eq(variables['configuration'], 'prodDataJob') }}:
     - group: Billing.AzureCrawler.vg
     - name: pythonVersion
       value: '3.8'
