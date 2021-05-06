@@ -26,9 +26,9 @@ variables:
   value: '3.8'
 - group: Billing.AzureCrawler.vg
   ${{ if eq(variables['Agent.JobName'], 'sandboxDataJob') }}:
-    - group: Billing.AzureSandBoxCrawler.vg
+  - group: Billing.AzureSandBoxCrawler.vg
   ${{ if eq(variables['Agent.JobName'], 'prodDataJob') }}:
-    - group: Billing.AzureCrawler.vg
+  - group: Billing.AzureCrawler.vg
 
 steps:
 - task: UsePythonVersion@0
