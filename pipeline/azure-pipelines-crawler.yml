@@ -25,9 +25,9 @@ strategy:
 
 variables:
   ${{ if eq(variables['Agent.JobName'], 'sandboxData') }}:
-    - group: Billing.AzureSandBoxCrawler.vg
+  - group: Billing.AzureSandBoxCrawler.vg
   ${{ if eq(variables['Agent.JobName'], 'prodData') }}:
-    - group: Billing.AzureCrawler.vg
+  - group: Billing.AzureCrawler.vg
 
 
 steps:
