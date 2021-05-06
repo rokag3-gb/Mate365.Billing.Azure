@@ -71,7 +71,7 @@ def save_azure_customer_software(software_info, commit=is_commit):
         for software in software_info[tenant]:
             # [customerId] ,[includeEntitlements] ,[referenceOrderId] ,[lineItemId] ,[alternateId]
             # ,[productId] ,[quantity] ,[entitledArtifacts] ,[skuId] ,[entitlementType] ,[expiryDate] ,[RegDate] ,[RequestUri] ,[ResponseData]
-            _data = (tenant, json.dumps(software['includeEntitlements']), software['referenceOrder']['id'], software['referenceOrder']['lineItemId'], software['referenceOrder']['alternateId'],
+            _data = (tenant, json.dumps(software['includedEntitlements']), software['referenceOrder']['id'], software['referenceOrder']['lineItemId'], software['referenceOrder']['alternateId'],
                      software['productId'], software['quantity'], json.dumps(software['entitledArtifacts']), software['skuId'],
                      software['entitlementType'], parse(software['expiryDate']), datetime.now(), None, None)
             insert_data.append(_data)
