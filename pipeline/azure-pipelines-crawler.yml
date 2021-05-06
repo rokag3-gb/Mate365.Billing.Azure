@@ -22,9 +22,9 @@ strategy:
       configuration: prodDataJob
 
 variables:
-  - group: Billing.AzureCrawler.vg
   - name: pythonVersion
     value: '3.8'
+  - group: Billing.AzureCrawler.vg
   ${{ if eq(variables['Agent.JobName'], 'sandboxDataJob') }}:
     - group: Billing.AzureSandBoxCrawler.vg
   ${{ if eq(variables['Agent.JobName'], 'prodDataJob') }}:
