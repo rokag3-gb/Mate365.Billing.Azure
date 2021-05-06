@@ -14,20 +14,24 @@ schedules:
 
 
 variables:
-- group: Billing.AzureCrawler.vg
+  pythonVersion: '3.8'
 
 pool:
   vmImage: 'ubuntu-latest'
 strategy:
   matrix:
-    Python38:
-      python.version: '3.8'
+    sandboxData:
+      variables:
+      - group: Billing.AzureSandBoxCrawler.vg
+    prodData:
+      variables:
+      - group: Billing.AzureCrawler.vg
 
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+    versionSpec: '$(pythonVersion)'
+  displayName: 'Use Python $(pythonVersion)'
 
 - script: |
     python -m pip install --upgrade pip
