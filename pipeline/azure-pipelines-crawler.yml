@@ -22,6 +22,8 @@ strategy:
       configuration: prodDataJob
 
 variables:
+- name: pythonVersion
+  value: '3.8'
 - group: Billing.AzureCrawler.vg
 - ${{ if eq(variables['Agent.JobName'], 'Job sandbox') }}:
   - group: Billing.AzureSandBoxCrawler.vg
@@ -39,6 +41,7 @@ steps:
   displayName: 'Use Python $(pythonVersion)'
 
 - script: |
+    echo $(Agent.JobName)
     python -m pip install --upgrade pip
     pip install -r requirements.txt
   displayName: 'Install dependencies'
