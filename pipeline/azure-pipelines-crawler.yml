@@ -18,10 +18,8 @@ strategy:
   matrix:
     sandbox:
       configuration: sandboxDataJob
-      variableGroup: Billing.AzureSandBoxCrawler.vg
     production:
       configuration: prodDataJob
-      variableGroup: Billing.AzureCrawler.vg
 
 variables:
   ${{ if eq(variables['configuration'], 'sandboxDataJob') }}:
