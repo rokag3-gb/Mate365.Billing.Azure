@@ -25,11 +25,11 @@ variables:
 - name: pythonVersion
   value: '3.8'
 - group: Billing.AzureCrawler.vg
-- ${{ if eq(variables['Agent.JobName'], 'Job sandbox') }}:
+- ${{ if eq(variables.configuration, 'sandboxDataJob') }}:
   - group: Billing.AzureSandBoxCrawler.vg
   - name: pythonVersion
     value: '3.8'
-- ${{ if eq(variables['Agent.JobName'], 'Job production') }}:
+- ${{ if eq(variables.configuration, 'prodDataJob') }}:
   - group: Billing.AzureCrawler.vg
   - name: pythonVersion
     value: '3.9'
