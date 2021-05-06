@@ -18,17 +18,16 @@ strategy:
   matrix:
     sandboxData:
       variableGroup: Billing.AzureSandBoxCrawler.vg
-      pythonVersion: '3.8'
     prodData:
       variableGroup: Billing.AzureCrawler.vg
-      pythonVersion: '3.8'
 
 variables:
   ${{ if eq(variables['Agent.JobName'], 'sandboxData') }}:
-  - group: Billing.AzureSandBoxCrawler.vg
+    - group: Billing.AzureSandBoxCrawler.vg
   ${{ if eq(variables['Agent.JobName'], 'prodData') }}:
-  - group: Billing.AzureCrawler.vg
-
+    - group: Billing.AzureCrawler.vg
+  - name: pythonVersion
+    value: '3.8'
 
 steps:
 - task: UsePythonVersion@0
