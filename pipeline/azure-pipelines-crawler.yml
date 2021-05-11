@@ -40,5 +40,5 @@ steps:
 - script: |
     export PYTHONPATH=$PYTHONPATH:$(System.DefaultWorkingDirectory)
     python main.py --daily-usage --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
-    python main.py -f --daily-usage-update --update-period 7 --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
+    python main.py --daily-usage-update --update-period 7 --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
   displayName: 'crawler'
