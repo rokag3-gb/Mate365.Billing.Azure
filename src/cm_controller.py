@@ -5,7 +5,7 @@ Data와 Database간 컨트롤
 # CM database를 통한 Tenant list 받아오기.
 import json
 from datetime import datetime, timedelta
-from dateutil.parser import parse
+from dateutil.parser import parse, isoparse
 
 from src.database.db_connection import DBConnect
 from src.env import AzurePartnerCenterEnv
@@ -46,8 +46,11 @@ def save_azure_customer_subscription(subscription_info, commit=is_commit):
             # [termDuration],[isMicrosoftProduct],[attentionNeeded],[actionTaken],[contractType],[links_offer_uri],[links_product_uri],[links_sku_uri],
             # [links_availability_uri],[links_self_uri],[orderId],[attributes_etag],[attributes_objectType],[RegDate],[RequestUri],[ResponseData]
             _data = (datetime.now(), tenant, subscription['id'], subscription['offerId'], subscription['entitlementId'] if 'entitlementId' in subscription else subscription['id'], subscription['offerName'], subscription['friendlyName'],
-                     subscription['quantity'], subscription['unitType'], subscription['hasPurchasableAddons'], subscription['creationDate'],
-                     subscription['effectiveStartDate'], subscription['commitmentEndDate'], subscription['status'], subscription['autoRenewEnabled'],
+                     subscription['quantity'], subscription['unitType'], subscription['hasPurchasableAddons'], 
+                     isoparse(subscription['creationDate']).replace(microsecond=0, tzinfo=None),
+                     isoparse(subscription['effectiveStartDate']).replace(microsecond=0, tzinfo=None), 
+                     isoparse(subscription['commitmentEndDate']).replace(microsecond=0, tzinfo=None), 
+                     subscription['status'], subscription['autoRenewEnabled'],
                      subscription['isTrial'], subscription['billingType'], subscription['billingCycle'], json.dumps(subscription['actions']) if 'actions' in subscription else None, subscription['termDuration'],
                      subscription['isMicrosoftProduct'], subscription['attentionNeeded'], subscription['actionTaken'], subscription['contractType'],
                      subscription['links']['offer']['uri'] if 'offer' in subscription['links'] else None, subscription['links']['product']['uri'], subscription['links']['sku']['uri'],
@@ -68,7 +71,7 @@ def save_azure_customer_software(software_info, commit=is_commit):
         for software in software_info[tenant]:
             # [customerId] ,[includeEntitlements] ,[referenceOrderId] ,[lineItemId] ,[alternateId]
             # ,[productId] ,[quantity] ,[entitledArtifacts] ,[skuId] ,[entitlementType] ,[expiryDate] ,[RegDate] ,[RequestUri] ,[ResponseData]
-            _data = (tenant, json.dumps(software['includeEntitlements']), software['referenceOrder']['id'], software['referenceOrder']['lineItemId'], software['referenceOrder']['alternateId'],
+            _data = (tenant, json.dumps(software['includedEntitlements']), software['referenceOrder']['id'], software['referenceOrder']['lineItemId'], software['referenceOrder']['alternateId'],
                      software['productId'], software['quantity'], json.dumps(software['entitledArtifacts']), software['skuId'],
                      software['entitlementType'], parse(software['expiryDate']), datetime.now(), None, None)
             insert_data.append(_data)
