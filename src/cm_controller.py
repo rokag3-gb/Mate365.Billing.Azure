@@ -388,6 +388,6 @@ def save_ri_product_price(data):
 
 def is_license_usage_missing(tenant: str, t_date: datetime) -> bool:
     db = DBConnect.get_instance()
-    sql = db.get_sql().SELECT_AZURE_UTILIZATION_WHERE_USER
+    sql = db.get_sql().SELECT_AZURE_CUSTOMER_SUBSCRIPTION
     select_data = (t_date, tenant)
     return bool(db.select_data(sql, select_data))
