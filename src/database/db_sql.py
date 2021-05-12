@@ -100,6 +100,10 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,%s
            ,%s)
 """
+    SELECT_AZURE_CUSTOMER_SUBSCRIPTION = """
+    SELECT * FROM [dbo].[Azure_Customer_Subscription]
+      WHERE UsageDate = %s AND tenantId = %s AND unitType = 'Licenses'
+    """
     INSERT_AZURE_CUSTOMER_SUBSCRIPTION = """
     INSERT INTO [dbo].[Azure_Customer_Subscription]
            ([UsageDate]
