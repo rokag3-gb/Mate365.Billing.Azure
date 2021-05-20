@@ -4,7 +4,7 @@
 
 """
 from datetime import datetime
-import cgi
+import cgi, webbrowser
 from urllib.parse import parse_qs
 import requests
 from src.cm_controller import save_ratecard, save_azure_customer_subscription, save_azure_customer, \
@@ -231,34 +231,6 @@ def azure_csp_price_crawler():
 
 
 class UserAppAuthTokenHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-
-        print(self.path)
-        # partner_env = AzurePartnerCenterEnv.instance()
-        # "code=AuthorizationCodeValue&id_token=IdTokenValue&<rest of properties for state>"
-        # ctype, pdict = cgi.parse_header(self.headers["content-type"])
-        # pdict["boundary"] = bytes(pdict["boundary"], "utf-8")
-        # body = cgi.parse_multipart(self.rfile, pdict)
-        # print("Requesting refresh token")
-        # result = requests.post("https://login.microsoftonline.com/{}/oauth2/token" % partner_env.tenant,
-        #               data={
-        #                   "resource": "https://api.partnercenter.microsoft.com",
-        #                   "client_id": partner_env.appid,
-        #                   "client_secret": partner_env.secret,
-        #                   "grant_type": "authorization_code",
-        #                   "code": body["code"]
-        #               })
-        # token = result.json()
-        # token["access_token"]
-        # print(token)
-        self.send_response(200)
-        self.send_header("Content-type", "text/html")
-        self.end_headers()
-        self.wfile.write(bytes("<html><head><title>https://pythonbasics.org</title></head>", "utf-8"))
-        self.wfile.write(bytes("<p>Request: %s</p>" % self.path, "utf-8"))
-        self.wfile.write(bytes("<body>", "utf-8"))
-        self.wfile.write(bytes("<p>This is an example web server.</p>", "utf-8"))
-        self.wfile.write(bytes("</body></html>", "utf-8"))
         
     def do_POST(self):
         partner_env = AzurePartnerCenterEnv.instance()
@@ -281,10 +253,10 @@ class UserAppAuthTokenHandler(BaseHTTPRequestHandler):
                           "code": body["code"]
                       })
         print("Received refresh token")
-        token = result.json()
         print("====================")
         print("Store following refresh token on secret store")
         print("====================")
+        token = result.json()
         print("Refresh token: "+ token["refresh_token"])
         self.send_response(200)
         self.send_header("Content-type", "text/html")
@@ -293,6 +265,7 @@ class UserAppAuthTokenHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytes("<body>", "utf-8"))
         self.wfile.write(bytes("<p>Sucessfully got refresh token. Continue task on CLI App.</p>", "utf-8"))
         self.wfile.write(bytes("</body></html>", "utf-8"))
+        exit()
 
 
 def auth_user_app_mfa():
@@ -306,6 +279,7 @@ def auth_user_app_mfa():
     token_issue_url +=  "&scope=openid%20profile"
     token_issue_url +=  "&nonce=1"
     print("Visit {} on web browser to continue issue token.".format(token_issue_url))
+    webbrowser.open(token_issue_url)
 
     try:
         webServer.serve_forever()

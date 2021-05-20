@@ -26,7 +26,7 @@ class AzurePartnerCenterEnv:
         parser.add_argument('-f', '--file', action='store_true', help='.env파일을 통한 환경변수 등록')
         parser.add_argument('--database-password', type=str, help='')
         parser.add_argument('--mfa-auth-issue', action='store_true', help='MFA 인증으로 토큰 발급하여 저장')
-        parser.add_argument('--mfa-auth', action=str, help='MFA 인증으로 발급한 토큰으로 인증')
+        parser.add_argument('--mfa-auth', type=str, help='MFA 인증으로 발급한 토큰으로 인증') #MFA 인증으로 발급한 토큰으로 인증
         parser.add_argument('--app-secret', type=str, help='')
         parser.add_argument('--daily-usage', action='store_true', help='일별 사용량 수집')
         parser.add_argument('--daily-usage-update', action='store_true', help='일별 사용량 수집에 대한 과거 데이터 업데이트')
