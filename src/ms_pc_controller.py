@@ -199,7 +199,7 @@ def get_azure_resource_price(region='KR', currency='KRW', is_shared=False):
     return rates
 
 def get_license_usage(tenant: str, t_date: datetime):
-    pc_request.license_usage_data(param={"filter": "customerTenantId eq {}".format()})
+    pc_request.license_usage_data(param={"filter": "customerTenantId eq {}".format(tenant)})
 
     LOGGER.debug(f'param : tenant = {tenant}')
     result =  pc_request.license_usage_data(param={
