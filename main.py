@@ -2,7 +2,7 @@ from datetime import datetime
 
 from src.env import AzurePartnerCenterEnv
 from src.direct_crawler_main import daily_usage_crawler, invoice_crawler, azure_csp_price_crawler, \
-    daily_usage_update_crawler
+    daily_usage_update_crawler, auth_user_app_mfa
 from src.logger.teams_msg import send_teams_msg
 
 if __name__ == '__main__':
@@ -27,3 +27,7 @@ if __name__ == '__main__':
     if env.price_update:
         azure_csp_price_crawler()
         send_teams_msg('Azure 서비스 가격 수집 완료')
+    
+    if env.mfa_auth_issue:
+        auth_user_app_mfa()
+        pass
