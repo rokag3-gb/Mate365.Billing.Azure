@@ -4,7 +4,9 @@
 
 """
 from datetime import datetime
-
+import cgi
+from urllib.parse import parse_qs
+import requests
 from src.cm_controller import save_ratecard, save_azure_customer_subscription, save_azure_customer, \
     get_azure_utilization_user, remove_azure_utilization_user, save_azure_utilization_user, \
     save_azure_customer_software, save_azure_customer_ri, save_invoice, save_invoice_detail_azure, \
@@ -13,6 +15,7 @@ from src.database.db_connection import DBConnect
 from src.env import AzurePartnerCenterEnv
 from src.logger.teams_msg import send_teams_msg
 from src.ms_pc_controller import *
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
 # def crawler_main(tenant_list: list, date: datetime = None):
@@ -57,7 +60,8 @@ def daily_usage_crawler(tenant_list: list = None, t_date: datetime = None, term=
 
     # 모든 Azure 구독 수집 & Azure 사용량 수집 #########################################
     azure_subscriptions = filter_azure_subscription(subscriptions_info)
-    azure_daily_usages = []  # 모든 구독에 대한 사용량 [(tenant, subscription, [usage list]) ...]
+    # 모든 구독에 대한 사용량 [(tenant, subscription, [usage list]) ...]
+    azure_daily_usages = []
     # Default : 어제 사용량 요청
     if t_date is None:
         today = datetime.now()
@@ -122,7 +126,8 @@ def daily_usage_update_crawler(tenant_list: list = None, t_date: datetime = None
 
     for i in range(period):
         LOGGER.info(f'Update - {t_date}')
-        azure_daily_usages = []  # 모든 구독에 대한 사용량 [(tenant, subscription, [usage list]) ...]
+        # 모든 구독에 대한 사용량 [(tenant, subscription, [usage list]) ...]
+        azure_daily_usages = []
         for t in azure_subscriptions:
             for s in azure_subscriptions[t]:
                 azure_daily_usages.append((t, s['id'], get_azure_daily_usage(tenant=t,
@@ -152,7 +157,7 @@ def daily_usage_update_crawler(tenant_list: list = None, t_date: datetime = None
 
 def invoice_crawler(invoice_id: str = None, t_date: datetime = None):
     """
-    
+
     :param invoice_id: 특정 invoice id에 대해서만 서치할때 사용
     :param t_date: 월단위로 search 
     :return: 
@@ -163,7 +168,8 @@ def invoice_crawler(invoice_id: str = None, t_date: datetime = None):
     # invoice는 D계열(사용량, 라이선스기반) G계열(one-time) 두개가 나옴.
     # 없을경우 에러.
     if len(invoice_list) == 0:
-        LOGGER.error(f'해당 인보이스가 없음. input param : invoice id : {invoice_id} t_date : {t_date}')
+        LOGGER.error(
+            f'해당 인보이스가 없음. input param : invoice id : {invoice_id} t_date : {t_date}')
         LOGGER.exception(f'인보이스가 없음. 파트너센터 청구 유무 확인')
         raise
 
@@ -196,10 +202,12 @@ def invoice_crawler(invoice_id: str = None, t_date: datetime = None):
                         save_invoice_detail_onetime(invoice['id'], get_invoice_detail(invoice_id=invoice['id'],
                                                                                       provider='onetime'))
                 else:
-                    LOGGER.warning(f'Invoice Detail Type이 {invoice_detail_type}에서 벗어남. Invoice 정보: {detail}')
+                    LOGGER.warning(
+                        f'Invoice Detail Type이 {invoice_detail_type}에서 벗어남. Invoice 정보: {detail}')
 
         else:
-            LOGGER.warning(f'Invoice Type이 {invoice_type}에서 벗어남. Invoice 정보: {invoice}')
+            LOGGER.warning(
+                f'Invoice Type이 {invoice_type}에서 벗어남. Invoice 정보: {invoice}')
 
     DBConnect.get_instance().commit()
     DBConnect.get_instance().close()
@@ -220,3 +228,89 @@ def azure_csp_price_crawler():
     rates = get_azure_resource_price(is_shared=True)
     save_ratecard(rates, is_shared=True)
     rates.clear()
+
+
+class UserAppAuthTokenHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+
+        print(self.path)
+        # partner_env = AzurePartnerCenterEnv.instance()
+        # "code=AuthorizationCodeValue&id_token=IdTokenValue&<rest of properties for state>"
+        # ctype, pdict = cgi.parse_header(self.headers["content-type"])
+        # pdict["boundary"] = bytes(pdict["boundary"], "utf-8")
+        # body = cgi.parse_multipart(self.rfile, pdict)
+        # print("Requesting refresh token")
+        # result = requests.post("https://login.microsoftonline.com/{}/oauth2/token" % partner_env.tenant,
+        #               data={
+        #                   "resource": "https://api.partnercenter.microsoft.com",
+        #                   "client_id": partner_env.appid,
+        #                   "client_secret": partner_env.secret,
+        #                   "grant_type": "authorization_code",
+        #                   "code": body["code"]
+        #               })
+        # token = result.json()
+        # token["access_token"]
+        # print(token)
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        self.wfile.write(bytes("<html><head><title>https://pythonbasics.org</title></head>", "utf-8"))
+        self.wfile.write(bytes("<p>Request: %s</p>" % self.path, "utf-8"))
+        self.wfile.write(bytes("<body>", "utf-8"))
+        self.wfile.write(bytes("<p>This is an example web server.</p>", "utf-8"))
+        self.wfile.write(bytes("</body></html>", "utf-8"))
+        
+    def do_POST(self):
+        partner_env = AzurePartnerCenterEnv.instance()
+        ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+        if ctype == 'multipart/form-data':
+            body = cgi.parse_multipart(self.rfile, pdict, encoding="utf-8")
+        elif ctype == 'application/x-www-form-urlencoded':
+            length = int(self.headers.get('content-length'))
+            body = parse_qs(str(self.rfile.read(length), "utf-8"), encoding='utf-8', keep_blank_values=1)
+        else:
+            body = {}
+        
+        print("Requesting refresh token")
+        result = requests.post("https://login.microsoftonline.com/{}/oauth2/token".format(partner_env.tenant),
+                      data={
+                          "resource": "https://api.partnercenter.microsoft.com",
+                          "client_id": partner_env.appid,
+                          "client_secret": partner_env.secret,
+                          "grant_type": "authorization_code",
+                          "code": body["code"]
+                      })
+        print("Received refresh token")
+        token = result.json()
+        print("====================")
+        print("Store following refresh token on secret store")
+        print("====================")
+        print("Refresh token: "+ token["refresh_token"])
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        self.wfile.write(bytes("<html><head><title>Received refresh token</title></head>", "utf-8"))
+        self.wfile.write(bytes("<body>", "utf-8"))
+        self.wfile.write(bytes("<p>Sucessfully got refresh token. Continue task on CLI App.</p>", "utf-8"))
+        self.wfile.write(bytes("</body></html>", "utf-8"))
+
+
+def auth_user_app_mfa():
+    partner_env = AzurePartnerCenterEnv.instance()
+    webServer = HTTPServer(("localhost", 8080), UserAppAuthTokenHandler)
+
+    token_issue_url = "https://login.microsoftonline.com/common/oauth2/authorize?"
+    token_issue_url += "client_id=" + partner_env.appid
+    token_issue_url +=  "&response_mode=form_post"
+    token_issue_url +=  "&response_type=code%20" + "id_token"
+    token_issue_url +=  "&scope=openid%20profile"
+    token_issue_url +=  "&nonce=1"
+    print("Visit {} on web browser to continue issue token.".format(token_issue_url))
+
+    try:
+        webServer.serve_forever()
+    except KeyboardInterrupt:
+        pass
+
+    webServer.server_close()
+    print("Server stopped.")
