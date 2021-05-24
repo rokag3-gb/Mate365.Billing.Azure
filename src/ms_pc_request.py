@@ -189,6 +189,7 @@ class AzureResourceSearch:
     def __partner_center_api_request(self, endpoint: str, params={}, headers={}, timeout=30, retry=5) -> dict:
         LOGGER.debug(f'Partner Center API Request - endpoint :{endpoint}')
         url = self.PARTNER_API_BASEURL + endpoint
+        print(self.env.access_token)
         headers.update({
             'Authorization': 'Bearer ' + self.env.access_token,
             'Content-Type': 'application/json',
