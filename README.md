@@ -60,6 +60,9 @@ TEAMS_WEBHOOK_INFO_URL=
   python main.py -f --daily-usage-update --update-period 10 // 일별사용량 '10일이전 ~ 오늘' 업데이트
   python main.py -f --monthly-invoice  // 이번달 인보이스 업데이트
   python main.py -f --price-update  // azure price 업데이트
+
+  python main.py -f --mfa-auth-issue // User+App 인증 Refresh token 발급
+  python main.py -f --daily-usage-update --update-period 10 --mfa-auth $(REFRESH_TOKEN) // User+App 인증으로 발급된 Refresh token 으로 API 호출 
   ```
 - Prod 환경
   - DB password, ad secret의 경우 Parameter로 입력. (pipeline yaml 참조)
