@@ -62,34 +62,6 @@ def save_azure_customer_subscription(subscription_info, commit=is_commit):
         db.commit()
     db.close()
 
-def is_license_usage_exists(tenant: str, offerId: str, t_date: datetime) -> bool:
-    db = DBConnect.get_instance()
-    sql = db.get_sql().SELECT_AZURE_CUSTOMER_SUBSCRIPTION
-    select_data = (t_date, tenant, offerId)
-    return bool(db.select_data(sql, select_data))
-
-def save_ms_license_usage_as_customer_subscription(usage, commit=is_commit):
-    db = DBConnect.get_instance()
-    sql = db.get_sql().INSERT_AZURE_CUSTOMER_SUBSCRIPTION
-    insert_data = []
-    for subscription in usage[1]:
-        if not is_license_usage_exists(subscription['customerTenantId'].lower(), offerId=subscription['productId'], t_date=isoparse(subscription['processedDateTime'])):
-            print("DATA NEW")
-            # TODO: 라이선스 사용량 Insert 쿼리 작업
-            # [UsageDate], [tenantId],[subscriptionId],[offerId],[entitlementId],[offerName],[friendlyName],[quantity],[unitType],[hasPurchasableAddons],
-            # [creationDate],[effectiveStartDate],[commitmentEndDate],[status],[autoRenewEnabled],[isTrial],[billingType],[billingCycle],[actions],
-            # [termDuration],[isMicrosoftProduct],[attentionNeeded],[actionTaken],[contractType],[links_offer_uri],[links_product_uri],[links_sku_uri],
-            # [links_availability_uri],[links_self_uri],[orderId],[attributes_etag],[attributes_objectType],[RegDate],[RequestUri],[ResponseData]
-            _data = (isoparse(subscription['processedDateTime']), subscription['customerTenantId'].lower(), "N/A", subscription['productId'], "N/A", subscription['productName'], subscription['productName'],
-                    subscription['licensesQualified'], "Licenses", 0, None, None, None, None, None, None, None, None, None, None,
-                    None, None, None, None, None, None, None, None, None, None, None, None, datetime.now(), None, None)
-            insert_data.append(_data)
-        else:
-            print("DATA DUPLICATE")
-    db.insert_data(sql, insert_data)
-    if commit:
-        db.commit()
-    db.close()
 def save_azure_customer_software(software_info, commit=is_commit):
     db = DBConnect.get_instance()
     sql = db.get_sql().INSERT_AZURE_CUSTOMER_SOFTWARE

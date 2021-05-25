@@ -153,35 +153,6 @@ class AzureResourceSearch:
         """
         req = self.__partner_center_api_request(endpoint='/v1.0/sales/pricesheets(Market=\'kr\',PricesheetView=\'azure_consumption\')', params=param)
 
-    def license_usage_data(self, param={}) -> dict:
-        """
-        https://docs.microsoft.com/en-us/partner-center/develop/get-licenses-usage-information
-        :param tenant:
-        :param param: {'processedDateTime': '2018-10-14T00:00:00', 'filter':'customerTenantId eq tenant-id'}
-        :return:
-            {
-            "Value": [
-                {
-                "processedDateTime": "2018-10-14T00:00:00",
-                "workloadCode": "SPO",
-                "workloadName": "SharePoint",
-                "serviceCode": "o365",
-                "serviceName": "Microsoft Office 365",
-                "channel": "reseller",
-                "customerTenantId": "0112A436-B14E-4888-967B-CA4BB2CF1234",
-                "customerName": "TEST COMPANY",
-                "productId": "6FD2C87F-B296-42F0-B197-1E91E994B900",
-                "productName": "OFFICE 365 ENTERPRISE E3",
-                "licenseActive": 0,
-                "licensesQualified": 1
-                }
-            }
-        """
-        req = self.__partner_center_api_request(
-            endpoint=f'/partner/v1/analytics/commercial/usage/license', params=param)
-        LOGGER.debug(req)
-        return req
-
     def test_request(self, endpoint):
         req = self.__partner_center_api_request(endpoint=endpoint)
         return req

@@ -10,8 +10,7 @@ import requests
 from src.cm_controller import save_ratecard, save_azure_customer_subscription, save_azure_customer, \
     get_azure_utilization_user, remove_azure_utilization_user, save_azure_utilization_user, \
     save_azure_customer_software, save_azure_customer_ri, save_invoice, save_invoice_detail_azure, \
-    save_invoice_detail_office, save_invoice_detail_onetime, is_license_usage_exists, \
-        save_ms_license_usage_as_customer_subscription
+    save_invoice_detail_office, save_invoice_detail_onetime
 from src.database.db_connection import DBConnect
 from src.env import AzurePartnerCenterEnv
 from src.logger.teams_msg import send_teams_msg
@@ -127,37 +126,34 @@ def daily_usage_update_crawler(tenant_list: list = None, t_date: datetime = None
 
     for i in range(period):
         LOGGER.info(f'Update - {t_date}')
-        azure_daily_usages = []  # 모든 구독에 대한 사용량 [(tenant, subscription, [usage list]) ...]
-        ms_license_usages = []
-        # for t in azure_subscriptions:
-        #     for s in azure_subscriptions[t]:
-        #         azure_daily_usages.append((t, s['id'], get_azure_daily_usage(tenant=t,
-        #                                                                      subscription=s['id'],
-        #                                                                      t_date=t_date)))
-        for tenant in tenant_list:
-            ms_license_usages.append((tenant, get_license_usage(tenant=tenant, t_date=t_date)))
+        # 모든 구독에 대한 사용량 [(tenant, subscription, [usage list]) ...]
+        azure_daily_usages = []
+        for t in azure_subscriptions:
+            for s in azure_subscriptions[t]:
+                azure_daily_usages.append((t, s['id'], get_azure_daily_usage(tenant=t,
+                                                                             subscription=s['id'],
+                                                                             t_date=t_date)))
         # CM DATABASE 저장
         # get daily usage from CM database & if exist : DELETE & insert
-        # for usage in azure_daily_usages:
-        #     cm_daily_usage = get_azure_utilization_user(tenant=usage[0],
-        #                                                 subscription=usage[1],
-        #                                                 start_time=t_date,
-        #                                                 offset=term)
-        #     if cm_daily_usage:
-        #         remove_azure_utilization_user(tenant=usage[0],
-        #                                       subscription=usage[1],
-        #                                       start_time=t_date,
-        #                                       offset=term)
-        #     save_azure_utilization_user(tenant=usage[0],
-        #                                 subscription=usage[1],
-        #                                 start_time=t_date,
-        #                                 end_time=t_date + timedelta(days=term),
-        #                                 daily_usage=usage[2])
-        for license_usage in ms_license_usages:
-            save_ms_license_usage_as_customer_subscription(license_usage)
-            # pass
+        for usage in azure_daily_usages:
+            cm_daily_usage = get_azure_utilization_user(tenant=usage[0],
+                                                        subscription=usage[1],
+                                                        start_time=t_date,
+                                                        offset=term)
+            if cm_daily_usage:
+                remove_azure_utilization_user(tenant=usage[0],
+                                              subscription=usage[1],
+                                              start_time=t_date,
+                                              offset=term)
+            save_azure_utilization_user(tenant=usage[0],
+                                        subscription=usage[1],
+                                        start_time=t_date,
+                                        end_time=t_date + timedelta(days=term),
+                                        daily_usage=usage[2])
+
         t_date = t_date - timedelta(days=1)
         # ##################################################################################
+
 
 
 def invoice_crawler(invoice_id: str = None, t_date: datetime = None):
