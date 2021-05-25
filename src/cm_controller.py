@@ -62,7 +62,6 @@ def save_azure_customer_subscription(subscription_info, commit=is_commit):
         db.commit()
     db.close()
 
-
 def save_azure_customer_software(software_info, commit=is_commit):
     db = DBConnect.get_instance()
     sql = db.get_sql().INSERT_AZURE_CUSTOMER_SOFTWARE
@@ -367,3 +366,4 @@ def save_ms_product_price(data):
 def save_ri_product_price(data):
     # IF EXISTS : insert or update
     pass
+

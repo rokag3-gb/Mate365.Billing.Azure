@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 from json.decoder import JSONDecodeError
 
-import requests
+import requests, urllib
 
 from src.env import AzurePartnerCenterEnv
 from src.logger.logger import LOGGER
@@ -167,7 +167,8 @@ class AzureResourceSearch:
         })
         for i in range(retry):
             try:
-                r = requests.get(url, headers=headers, params=params, timeout=timeout)
+                encoded_params = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+                r = requests.get(url, headers=headers, params=encoded_params, timeout=timeout)
                 LOGGER.debug(f'Partner Center API Request - response {r.status_code}')
                 r.raise_for_status()
                 # TODO: 에러처리
@@ -188,4 +189,5 @@ class AzureResourceSearch:
                 continue
             break
 
+    
 
