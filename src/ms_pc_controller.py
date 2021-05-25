@@ -197,12 +197,3 @@ def get_azure_resource_price(region='KR', currency='KRW', is_shared=False):
         rates = pc_request.ratecards(param={'currency': currency, 'region': region})
     LOGGER.debug(f'Meter len : {len(rates["meters"])}')
     return rates
-
-def get_license_usage(tenant: str, t_date: datetime):
-    LOGGER.debug(f'param : tenant = {tenant}, date: {t_date.replace(microsecond=0, tzinfo=None).isoformat()}')
-    result =  pc_request.license_usage_data(param={
-            # "filter": "customerTenantId eq " + tenant,
-            "processedDateTime": t_date.replace(microsecond=0, tzinfo=None).isoformat()
-            })["Value"]
-    LOGGER.debug(f'result : {result}')
-    return result
