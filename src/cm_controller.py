@@ -133,6 +133,13 @@ def save_azure_utilization_user(tenant: str, subscription: str, start_time: date
         db.commit()
     db.close()
 
+def save_azure_plan_raw_usage(raw_data, commit=is_commit):
+    db = DBConnect.get_instance()
+    sql = db.get_sql().INSERT_AZUREPLAN_UNBILLED_RAW
+    db.insert_data(sql, raw_data)
+    if commit:
+        db.commit()
+    db.close()
 
 def get_azure_utilization_user(tenant: str, subscription: str,
                                start_time: datetime, offset=1):
