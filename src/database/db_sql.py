@@ -991,3 +991,10 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
 
     """
 
+INSERT_AZUREPLAN_UNBILLED_RAW = """
+
+    INSERT INTO [dbo].[Azure_Invoice_Unbilled_raw]
+               ([ResponseData])
+         VALUES
+               (%s)
+    """
