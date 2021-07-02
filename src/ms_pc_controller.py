@@ -134,6 +134,14 @@ def get_azure_daily_usage(tenant: str, subscription: str, t_date: datetime, para
                                                      subscription=subscription,
                                                      param=params)['items']
 
+def azure_plan_unbilled_usage_raw():
+    result = pc_request.azure_plan_unbilled_usage_raw({
+        "provider": "onetime",
+        "invoicelineitemtype": "usagelineitems",
+        "currencycode": "KRW",
+        "period": "current"
+    })
+    return result["items"]
 
 # 년-월 입력으로 해당 인보이스 받아옴
 def search_invoice(invoice_id: str = None, t_date: datetime = None):

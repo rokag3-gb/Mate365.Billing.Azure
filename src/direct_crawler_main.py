@@ -7,7 +7,7 @@ from datetime import datetime
 import cgi, webbrowser
 from urllib.parse import parse_qs
 import requests
-from src.cm_controller import save_ratecard, save_azure_customer_subscription, save_azure_customer, \
+from src.cm_controller import save_azure_plan_raw_usage, save_ratecard, save_azure_customer_subscription, save_azure_customer, \
     get_azure_utilization_user, remove_azure_utilization_user, save_azure_utilization_user, \
     save_azure_customer_software, save_azure_customer_ri, save_invoice, save_invoice_detail_azure, \
     save_invoice_detail_office, save_invoice_detail_onetime
@@ -90,6 +90,11 @@ def daily_usage_crawler(tenant_list: list = None, t_date: datetime = None, term=
                                     start_time=t_date,
                                     end_time=t_date + timedelta(days=term),
                                     daily_usage=usage[2])
+
+    # Azure plan 사용량 수집
+    azplan = azure_plan_unbilled_usage_raw()
+    save_azure_plan_raw_usage(azplan)
+
     LOGGER.info(f'Save azure_utilization 완료')
     # ##################################################################################
     send_teams_msg('Daily Crawler Done.')
