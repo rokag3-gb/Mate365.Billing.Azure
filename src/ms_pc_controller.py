@@ -126,7 +126,7 @@ def get_azure_daily_usage(tenant: str, subscription: str, t_date: datetime, para
             'show_details': 'true',
             'size': 1000
         }
-    convert_date_fmt = '%Y-%m-%d'
+    convert_date_fmt = '%Y-%m-%dT00:00:00Z'
     target_date = {'start_time': t_date.strftime(convert_date_fmt),
                    'end_time': (t_date + timedelta(days=1)).strftime(convert_date_fmt)}
     params.update(target_date)
@@ -141,7 +141,7 @@ def azure_plan_unbilled_usage_raw():
         "currencycode": "KRW",
         "period": "current"
     })
-    return result["items"]
+    return result
 
 # 년-월 입력으로 해당 인보이스 받아옴
 def search_invoice(invoice_id: str = None, t_date: datetime = None):

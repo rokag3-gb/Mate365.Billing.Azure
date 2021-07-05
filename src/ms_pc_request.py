@@ -82,7 +82,7 @@ class AzureResourceSearch:
     
     def azure_plan_unbilled_usage_raw(self, param: dict) -> dict:
         req = self.__partner_center_api_request(
-            endpoint="https://Cloudmate-Product@dev.azure.com/Cloudmate-Product/Mate365.Billing/_git/BackOfficeBackend",
+            endpoint="/v1/invoices/unbilled/lineitems",
             params=param
         )
         LOGGER.debug(req)
