@@ -153,7 +153,8 @@ def azure_plan_unbilled_usage_raw(period: str, continuationToken: str = None, ma
 
     result = pc_request.azure_plan_unbilled_usage_raw(req_params, headers)
     req_params["tenantId"] = AzurePartnerCenterEnv.instance().tenant
-    req_params["MS-ContinuationToken"] = continuationToken
+    if continuationToken is not None:
+        req_params["MS-ContinuationToken"] = continuationToken
     return (result, req_params)
 
 # 년-월 입력으로 해당 인보이스 받아옴

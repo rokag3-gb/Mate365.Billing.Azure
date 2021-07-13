@@ -18,10 +18,9 @@ if __name__ == '__main__':
         daily_usage_update_crawler(period=env.update_period)
         send_teams_msg(f'일별 사용량 업데이트 완료 - 기간: {env.update_period}')
     
-    if env.azplan_usage_update:
-        azplan_usage_crawler()
+    if env.azplan_usage_update == "current" or env.azplan_usage_update == "previous":
+        azplan_usage_crawler(period=env.azplan_usage_update)
         send_teams_msg('azplan 사용량 수집 완료')
-
 
     # 월별 인보이스 수집
     if env.monthly_invoice:
