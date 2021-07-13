@@ -143,8 +143,7 @@ def azure_plan_unbilled_usage_raw(period: str, max_size=2000):
         "provider": "onetime",
         "invoicelineitemtype": "usagelineitems",
         "currencycode": "KRW",
-        # "period": "current",
-        "period": "previous",
+        "period": period,
         "size": max_size
     }
     result = pc_request.azure_plan_unbilled_usage_raw(req_params)
