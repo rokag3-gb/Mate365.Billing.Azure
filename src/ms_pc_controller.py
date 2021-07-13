@@ -138,7 +138,7 @@ def get_azure_daily_usage(tenant: str, subscription: str, t_date: datetime, para
                                                      param=params)['items']
 
 
-def azure_plan_unbilled_usage_raw(period: str, max_size=2000):
+def azure_plan_unbilled_usage_raw(period: str, continuationToken: str = None, max_size=2000) -> list:
     req_params = {
         "provider": "onetime",
         "invoicelineitemtype": "usagelineitems",
@@ -146,13 +146,17 @@ def azure_plan_unbilled_usage_raw(period: str, max_size=2000):
         "period": period,
         "size": max_size
     }
-    result = pc_request.azure_plan_unbilled_usage_raw(req_params)
+    headers = {}
+    if continuationToken is not None:
+        req_params["seekOperation"] = "Next"
+        headers["MS-ContinuationToken"] = continuationToken
+
+    result = pc_request.azure_plan_unbilled_usage_raw(req_params, headers)
     req_params["tenantId"] = AzurePartnerCenterEnv.instance().tenant
+    req_params["MS-ContinuationToken"] = continuationToken
     return (result, req_params)
 
 # 년-월 입력으로 해당 인보이스 받아옴
-
-
 def search_invoice(invoice_id: str = None, t_date: datetime = None):
     all_invoice_list = pc_request.invoice_list()['items']
     if (t_date is None) and (invoice_id is None):

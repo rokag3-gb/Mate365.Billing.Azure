@@ -80,11 +80,12 @@ class AzureResourceSearch:
         LOGGER.debug(req)
         return req
     
-    def azure_plan_unbilled_usage_raw(self, param: dict) -> dict:
+    def azure_plan_unbilled_usage_raw(self, param: dict, headers = None) -> dict:
         req = self.__partner_center_api_request(
-            endpoint="/v1/invoices/unbilled/lineitems",
-            params=param
-        )
+                endpoint="/v1/invoices/unbilled/lineitems",
+                params=param,
+                headers=headers
+            )
         LOGGER.debug(req)
         return req
 
