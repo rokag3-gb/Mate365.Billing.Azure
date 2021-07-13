@@ -91,14 +91,22 @@ def daily_usage_crawler(tenant_list: list = None, t_date: datetime = None, term=
                                     end_time=t_date + timedelta(days=term),
                                     daily_usage=usage[2])
 
-    # Azure plan 사용량 수집
-    azplan = azure_plan_unbilled_usage_raw()
-    save_azure_plan_raw_usage(azplan)
-
     LOGGER.info(f'Save azure_utilization 완료')
     # ##################################################################################
     send_teams_msg('Daily Crawler Done.')
 
+def azplan_usage_crawler():
+    LOGGER.info('Start Azure plan usage Crawler')
+    # Azure plan 사용량 수집
+    azplan = azure_plan_unbilled_usage_raw(period="current")
+    save_azure_plan_raw_usage(azplan)
+
+    azplan = azure_plan_unbilled_usage_raw(period="previous")
+    save_azure_plan_raw_usage(azplan)
+
+    LOGGER.info(f'save_azure_plan_raw_usage 완료')
+    # ##################################################################################
+    send_teams_msg('Azure plan usage Crawler Done.')
 
 def daily_usage_update_crawler(tenant_list: list = None, t_date: datetime = None, period=1, term=1):
     """

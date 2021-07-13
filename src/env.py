@@ -33,6 +33,7 @@ class AzurePartnerCenterEnv:
         parser.add_argument('--update-period', type=int, help='업데이트 기간(어제날짜부터의 기간)')
         parser.add_argument('--monthly-invoice', action='store_true', help='월별 인보이스 수집')
         parser.add_argument('--price-update', action='store_true', help='Azure 제품군 가격 업데이트')
+        parser.add_argument('--azplan-usage-update', action='store_true', help="Azure Plan 구독 사용량 데이터 갱신")
         
         args = parser.parse_args()
         # 실행 로직 선택(bool)
@@ -43,6 +44,7 @@ class AzurePartnerCenterEnv:
         self.price_update = args.price_update
         self.mfa_auth_issue = args.mfa_auth_issue
         self.mfa_auth = args.mfa_auth
+        self.azplan_usage_update = args.azplan_usage_update
         # 파일로 환경변수 세팅
         if args.file:
             env_path = os.path.join(os.path.dirname(sys.modules['__main__'].__file__), '.env')

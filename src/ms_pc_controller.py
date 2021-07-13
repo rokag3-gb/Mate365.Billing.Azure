@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 from src.logger.logger import LOGGER
 from src.ms_pc_request import AzureResourceSearch
+from src.env import AzurePartnerCenterEnv
 
 pc_request = AzureResourceSearch()
 exclude_tenant_list = ['bb43721a-680c-4c9f-b234-72c8fe6c8e3c', 'fd17bb21-df5e-4169-83c4-f9d0ac42bfcb',
@@ -137,15 +138,17 @@ def get_azure_daily_usage(tenant: str, subscription: str, t_date: datetime, para
                                                      param=params)['items']
 
 
-def azure_plan_unbilled_usage_raw(max_size=2000):
+def azure_plan_unbilled_usage_raw(period: str, max_size=2000):
     req_params = {
         "provider": "onetime",
         "invoicelineitemtype": "usagelineitems",
         "currencycode": "KRW",
-        "period": "current",
+        # "period": "current",
+        "period": "previous",
         "size": max_size
     }
     result = pc_request.azure_plan_unbilled_usage_raw(req_params)
+    req_params["tenantId"] = AzurePartnerCenterEnv.instance().tenant
     return (result, req_params)
 
 # 년-월 입력으로 해당 인보이스 받아옴
