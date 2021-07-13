@@ -100,6 +100,7 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,%s
            ,%s)
 """
+
     INSERT_AZURE_CUSTOMER_SUBSCRIPTION = """
     INSERT INTO [dbo].[Azure_Customer_Subscription]
            ([UsageDate]
@@ -990,3 +991,10 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
 
     """
 
+INSERT_AZUREPLAN_UNBILLED_RAW = """
+
+    INSERT INTO [dbo].[Azure_Invoice_Unbilled_raw]
+               ([RequestData], [ResponseData])
+         VALUES
+               (%s, %s)
+    """

@@ -16,6 +16,7 @@ MS_TIME_FORMATTING = '%Y-%m-%dT%H:%M:%S%z'
 MS_TIME_FORMATTING_WITHOUT_ZONE = '%Y-%m-%dT%H:%M:%S'
 is_commit = AzurePartnerCenterEnv.instance().commit
 
+
 def get_target_tenant_list():
     pass
 
@@ -46,15 +47,21 @@ def save_azure_customer_subscription(subscription_info, commit=is_commit):
             # [termDuration],[isMicrosoftProduct],[attentionNeeded],[actionTaken],[contractType],[links_offer_uri],[links_product_uri],[links_sku_uri],
             # [links_availability_uri],[links_self_uri],[orderId],[attributes_etag],[attributes_objectType],[RegDate],[RequestUri],[ResponseData]
             _data = (datetime.now(), tenant, subscription['id'], subscription['offerId'], subscription['entitlementId'] if 'entitlementId' in subscription else subscription['id'], subscription['offerName'], subscription['friendlyName'],
-                     subscription['quantity'], subscription['unitType'], subscription['hasPurchasableAddons'], 
-                     isoparse(subscription['creationDate']).replace(microsecond=0, tzinfo=None),
-                     isoparse(subscription['effectiveStartDate']).replace(microsecond=0, tzinfo=None), 
-                     isoparse(subscription['commitmentEndDate']).replace(microsecond=0, tzinfo=None), 
+                     subscription['quantity'], subscription['unitType'], subscription['hasPurchasableAddons'],
+                     isoparse(subscription['creationDate']).replace(
+                         microsecond=0, tzinfo=None),
+                     isoparse(subscription['effectiveStartDate']).replace(
+                         microsecond=0, tzinfo=None),
+                     isoparse(subscription['commitmentEndDate']).replace(
+                         microsecond=0, tzinfo=None),
                      subscription['status'], subscription['autoRenewEnabled'],
-                     subscription['isTrial'], subscription['billingType'], subscription['billingCycle'], json.dumps(subscription['actions']) if 'actions' in subscription else None, subscription['termDuration'],
+                     subscription['isTrial'], subscription['billingType'], subscription['billingCycle'], json.dumps(
+                         subscription['actions']) if 'actions' in subscription else None, subscription['termDuration'],
                      subscription['isMicrosoftProduct'], subscription['attentionNeeded'], subscription['actionTaken'], subscription['contractType'],
-                     subscription['links']['offer']['uri'] if 'offer' in subscription['links'] else None, subscription['links']['product']['uri'], subscription['links']['sku']['uri'],
-                     subscription['links']['availability']['uri'], subscription['links']['self']['uri'], subscription['orderId'], subscription['attributes']['etag'] if 'etag' in subscription['attributes'] else None,
+                     subscription['links']['offer']['uri'] if 'offer' in subscription['links'] else None, subscription[
+                         'links']['product']['uri'], subscription['links']['sku']['uri'],
+                     subscription['links']['availability']['uri'], subscription['links']['self']['uri'], subscription[
+                         'orderId'], subscription['attributes']['etag'] if 'etag' in subscription['attributes'] else None,
                      subscription['attributes']['objectType'], datetime.now(), None, None)
             insert_data.append(_data)
     db.insert_data(sql, insert_data)
@@ -72,7 +79,8 @@ def save_azure_customer_software(software_info, commit=is_commit):
             # [customerId] ,[includeEntitlements] ,[referenceOrderId] ,[lineItemId] ,[alternateId]
             # ,[productId] ,[quantity] ,[entitledArtifacts] ,[skuId] ,[entitlementType] ,[expiryDate] ,[RegDate] ,[RequestUri] ,[ResponseData]
             _data = (tenant, json.dumps(software['includedEntitlements']), software['referenceOrder']['id'], software['referenceOrder']['lineItemId'], software['referenceOrder']['alternateId'],
-                     software['productId'], software['quantity'], json.dumps(software['entitledArtifacts']), software['skuId'],
+                     software['productId'], software['quantity'], json.dumps(
+                         software['entitledArtifacts']), software['skuId'],
                      software['entitlementType'], parse(software['expiryDate']), datetime.now(), None, None)
             insert_data.append(_data)
     db.insert_data(sql, insert_data, auto_commit=commit)
@@ -90,21 +98,29 @@ def save_azure_customer_ri(ri_info, commit=is_commit):
             # entitledArtifacts가 1개라고 가정하고 넣기. entitledArtifacts에는 전체, 나머지에는 [0]
             # 2개 이상일 경우, Warning 으로 체크.
             if len(ri['quantityDetails']) != 1:
-                LOGGER.warning(f'Azure Customer RI 데이터의 quantityDetails 배열 길이 이상. 해당 데이터: {ri}')
+                LOGGER.warning(
+                    f'Azure Customer RI 데이터의 quantityDetails 배열 길이 이상. 해당 데이터: {ri}')
             if len(ri['entitledArtifacts']) != 1:
-                LOGGER.warning(f'Azure Customer RI 데이터의 entitledArtifacts 배열 길이 이상. 해당 데이터: {ri}')
+                LOGGER.warning(
+                    f'Azure Customer RI 데이터의 entitledArtifacts 배열 길이 이상. 해당 데이터: {ri}')
             # [customerId] ,[includeEntitlements] ,[referenceOrderId] ,[lineItemId] ,[alternateId] ,[productId]
             # ,[quantity] ,[quantityDetails_status] ,[entitledArtifacts] ,[entitledArtifacts_uri] ,[entitledArtifacts_headers]
             # ,[entitledArtifacts_ResourceId] ,[entitledArtifacts_artifactType] ,[entitledArtifacts_dynamicAttributes] ,[skuId]
             # ,[entitlementType] ,[fulfillmentState] ,[expiryDate] ,[RegDate] ,[RequestUri] ,[ResponseData]
             _data = (tenant, json.dumps(ri['includedEntitlements']), ri['referenceOrder']['id'], ri['referenceOrder']['lineItemId'], ri['referenceOrder']['alternateId'],
-                     ri['productId'], ri['quantity'], ri['quantityDetails'][0]['status'] if len(ri['quantityDetails']) else None,
+                     ri['productId'], ri['quantity'], ri['quantityDetails'][0]['status'] if len(
+                         ri['quantityDetails']) else None,
                      json.dumps(ri['entitledArtifacts']),
-                     ri['entitledArtifacts'][0]['link']['uri'] if len(ri['entitledArtifacts']) else None,
-                     json.dumps(ri['entitledArtifacts'][0]['link']['headers']) if len(ri['entitledArtifacts']) else None,
-                     ri['entitledArtifacts'][0]['resourceId'] if len(ri['entitledArtifacts']) else None,
-                     ri['entitledArtifacts'][0]['artifactType'] if len(ri['entitledArtifacts']) else None,
-                     json.dumps(ri['entitledArtifacts'][0]['dynamicAttributes']) if len(ri['entitledArtifacts']) else None,
+                     ri['entitledArtifacts'][0]['link']['uri'] if len(
+                         ri['entitledArtifacts']) else None,
+                     json.dumps(ri['entitledArtifacts'][0]['link']['headers']) if len(
+                         ri['entitledArtifacts']) else None,
+                     ri['entitledArtifacts'][0]['resourceId'] if len(
+                         ri['entitledArtifacts']) else None,
+                     ri['entitledArtifacts'][0]['artifactType'] if len(
+                         ri['entitledArtifacts']) else None,
+                     json.dumps(ri['entitledArtifacts'][0]['dynamicAttributes']) if len(
+                         ri['entitledArtifacts']) else None,
                      ri['skuId'], ri['entitlementType'], ri['fulfillmentState'],
                      parse(ri['expiryDate']), datetime.now(), None, None)
             insert_data.append(_data)
@@ -126,10 +142,21 @@ def save_azure_utilization_user(tenant: str, subscription: str, start_time: date
         _data = (start_time, end_time, tenant, subscription, parse(usage['usageStartTime']), parse(usage['usageEndTime']), usage['resource']['id'],
                  usage['resource']['name'], usage['resource']['category'], usage['resource']['subcategory'], usage['resource']['region'],
                  usage['quantity'], usage['unit'], usage['instanceData']['resourceUri'], usage['instanceData']['location'],
-                 usage['instanceData']['partNumber'], usage['instanceData']['orderNumber'], json.dumps(usage['instanceData']['tags']),
+                 usage['instanceData']['partNumber'], usage['instanceData']['orderNumber'], json.dumps(
+                     usage['instanceData']['tags']),
                  json.dumps(usage['instanceData']['additionalInfo']), datetime.now(), None, None)
         insert_data.append(_data)
     db.insert_data(sql, insert_data)
+    if commit:
+        db.commit()
+    db.close()
+
+
+def save_azure_plan_raw_usage(raw_data, commit=is_commit):
+    db = DBConnect.get_instance()
+    sql = db.get_sql().INSERT_AZUREPLAN_UNBILLED_RAW
+    _data_arr = [(json.dumps(raw_data[1]), json.dumps(raw_data[0]))]
+    db.insert_data(sql, _data_arr)
     if commit:
         db.commit()
     db.close()
@@ -341,13 +368,15 @@ def save_invoice_detail_onetime(invoice_id: str, detail: dict):
         items['orderDate'] = items['orderDate'][:19] + 'Z'
         insert_data.append((items['invoiceNumber'], items['partnerId'], items['customerId'], items['customerName'],
                             items['customerDomainName'], items['customerCountry'], items['invoiceNumber'], items['mpnId'],
-                            items['resellerMpnId'], items['orderId'], parse(items['orderDate']),
+                            items['resellerMpnId'], items['orderId'], parse(
+                                items['orderDate']),
                             items['productId'], items['skuId'], items['availabilityId'], items['productName'],
                             items['skuName'], items['chargeType'], items['unitPrice'],
                             items['effectiveUnitPrice'], items['unitType'], items['quantity'], items['subtotal'],
                             items['taxTotal'], items['totalForCustomer'], items['currency'],
                             items['publisherName'], items['publisherId'], items['subscriptionDescription'], items['subscriptionId'],
-                            parse(items['chargeStartDate']), parse(items['chargeEndDate']),
+                            parse(items['chargeStartDate']), parse(
+                                items['chargeEndDate']),
                             items['termAndBillingCycle'],
                             items['alternateId'], items['priceAdjustmentDescription'], items['discountDetails'],
                             items['pricingCurrency'], items['pcToBCExchangeRate'],
