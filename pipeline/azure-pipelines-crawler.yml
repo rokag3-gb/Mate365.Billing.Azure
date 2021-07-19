@@ -41,5 +41,7 @@ steps:
     export PYTHONPATH=$PYTHONPATH:$(System.DefaultWorkingDirectory)
     python main.py --daily-usage --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
     python main.py --daily-usage-update --update-period 7 --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
+    python main.py --azplan_usage_update current --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
+    python main.py --azplan_usage_update previous --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
   displayName: 'crawler'
   continueOnError: true
