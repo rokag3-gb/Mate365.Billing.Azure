@@ -196,6 +196,7 @@ def save_ratecard(rates, region='kr', currency='KRW', is_shared=False, commit=is
     :param commit:
     :return:
     """
+
     db = DBConnect.get_instance()
     # 일괄 삭제 후, Insert
     # 일괄삭제
@@ -210,36 +211,40 @@ def save_ratecard(rates, region='kr', currency='KRW', is_shared=False, commit=is
         insert_azure_meter_sql = db.get_sql().INSERT_AZURE_METER
         insert_azure_offerterm_sql = db.get_sql().INSERT_OFFERTERM
         affected = db.delete_data(del_azure_offerterm_sql)
+        LOGGER.info("Deleted old azure offerterm before inserting new one")
         LOGGER.debug(f'del_azure_offerterm_sql : {affected}')
     affected = db.delete_data(del_azure_meter_sql)
+    LOGGER.info("Deleted old azure meter before inserting new one")
     LOGGER.debug(f'del_azure_meter_sql : {affected}')
     # 일괄 insert
-
     insert_data_azure_meter = []
     # METER INSERT
+    LOGGER.info("new azure meter size: {}".format(len(rates['meters'])))
     for meter in rates['meters']:
         # [currency],[region],[locale],[isTaxIncluded],[meterId],[meter_name],[meter_rates],[meter_tags],[meter_category],
         # [meter_Subcategory],[meter_region],[meter_unit],[meter_includedQuantity],[meter_effectiveDate],[RegDate],[RequestUri],[ResponseData]
         _data = (rates['currency'], region, rates['locale'], rates['isTaxIncluded'], meter['id'], meter['name'], json.dumps(meter['rates']), json.dumps(meter['tags']), meter['category'],
-                 meter['subcategory'], meter['region'], meter['unit'], meter['includedQuantity'], meter['effectiveDate'], datetime.now(), rates['links']['self']['uri'], "")
+                meter['subcategory'], meter['region'], meter['unit'], meter['includedQuantity'], parse(meter['effectiveDate']), datetime.now(), rates['links']['self']['uri'], "")
         insert_data_azure_meter.append(_data)
+    LOGGER.info("Inserting new azure meter")
     db.insert_data(insert_azure_meter_sql, insert_data_azure_meter)
-
     # OFFERTERM INSERT
     if not is_shared:
         insert_data_azure_offerterm = []
+        LOGGER.info("new azure offerTerms size: {}".format(len(rates['offerTerms'])))
         for offer in rates['offerTerms']:
             if 'excludedMeterIds' in offer and len(offer['excludedMeterIds']):
                 for meterid in offer['excludedMeterIds']:
                     # [currency],[region],[name],[discount],[excludedMeterId],[effectiveDate],[RegDate]
                     _data = (rates['currency'], region, offer['name'], offer['discount'], meterid,
-                             offer['effectiveDate'], datetime.now())
+                            parse(offer['effectiveDate']), datetime.now())
                     insert_data_azure_offerterm.append(_data)
             else:
                 # [currency],[region],[name],[discount],[excludedMeterId],[effectiveDate],[RegDate]
                 _data = (rates['currency'], region, offer['name'], offer['discount'], str(offer['excludedMeterIds']),
-                         offer['effectiveDate'], datetime.now())
+                        parse(offer['effectiveDate']), datetime.now())
                 insert_data_azure_offerterm.append(_data)
+        LOGGER.info("Inserting new azure offerterm")
         db.insert_data(insert_azure_offerterm_sql, insert_data_azure_offerterm)
     if commit:
         db.commit()

@@ -1,21 +1,21 @@
 import os
 
 if os.environ['DATABASE_TYPE'] == 'sqlite3':
-    SELECT_PREPROCESS_OF_DAY_AND_SUBSCRIPTION_SQL = """SELECT * FROM `preprocess` WHERE last_update_date = %s and subscription = %s"""
-    SELECT_PREPROCESS_OF_DAY_ALL_SQL = """SELECT * FROM `preprocess` WHERE last_update_date = %s"""
-    DELETE_PREPROCESS_OF_DAY_SQL = """DELETE FROM `preprocess` WHERE last_update_date = %s and subscription = %s"""
+    SELECT_PREPROCESS_OF_DAY_AND_SUBSCRIPTION_SQL = """SELECT * FROM `preprocess` WHERE last_update_date = ? and subscription = ?"""
+    SELECT_PREPROCESS_OF_DAY_ALL_SQL = """SELECT * FROM `preprocess` WHERE last_update_date = ?"""
+    DELETE_PREPROCESS_OF_DAY_SQL = """DELETE FROM `preprocess` WHERE last_update_date = ? and subscription = ?"""
 
-    INSERT_SUMMARY_SQL = "INSERT INTO `summary` (`tenant`, `subscription`, `body`, `last_update_date`) VALUES (%s, %s, %s, %s);"
-    INSERT_DETAIL_SQL = "INSERT INTO `detail` (`tenant`, `subscription`, `body`, `last_update_date`) VALUES (%s, %s, %s, %s);"
-    INSERT_PREPROCESS_SQL = "INSERT INTO `preprocess` (`tenant`, `subscription`, `body`, `last_update_date`) VALUES (%s, %s, %s, %s);"
-    UPDATE_PREPROCESS_SQL = """UPDATE `preprocess` set body = JSON_SET(body, '$.Services', CAST(%s as json)) WHERE `tenant` = %s and `subscription` = %s and `last_update_date` = %s"""
+    INSERT_SUMMARY_SQL = "INSERT INTO `summary` (`tenant`, `subscription`, `body`, `last_update_date`) VALUES (?, ?, ?, ?);"
+    INSERT_DETAIL_SQL = "INSERT INTO `detail` (`tenant`, `subscription`, `body`, `last_update_date`) VALUES (?, ?, ?, ?);"
+    INSERT_PREPROCESS_SQL = "INSERT INTO `preprocess` (`tenant`, `subscription`, `body`, `last_update_date`) VALUES (?, ?, ?, ?);"
+    UPDATE_PREPROCESS_SQL = """UPDATE `preprocess` set body = JSON_SET(body, '$.Services', CAST(? as json)) WHERE `tenant` = ? and `subscription` = ? and `last_update_date` = ?"""
     INSERT_INVOICE_SQL = """INSERT INTO `invoice` (`SubscriptionId`, `OfferName`, `ChargeStartDate`, `ChargeEndDate`, `UnitPrice`,
          `UnitPriceRrp`, `Quantity`, `BillableRatio`, `SubTotal`, `SubTotalRrp`)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    UPDATE_INVOICE_IN_PREPROCESS_SQL = """UPDATE preprocess set body = JSON_SET(body, '$.BillingTable', CAST(%s as json)) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+    UPDATE_INVOICE_IN_PREPROCESS_SQL = """UPDATE preprocess set body = JSON_SET(body, '$.BillingTable', CAST(? as json)) 
         WHERE preprocess_id = (SELECT preprocess_id FROM
-         (SELECT preprocess_id FROM msw.preprocess WHERE subscription = %s and last_update_date >= %s and
-          last_update_date <= %s order by last_update_date desc LIMIT 1) AS s)"""
+         (SELECT preprocess_id FROM msw.preprocess WHERE subscription = ? and last_update_date >= ? and
+          last_update_date <= ? order by last_update_date desc LIMIT 1) AS s)"""
     SELECT_PRODUCT_PRICE_ALL = """SELECT * FROM msw.product_price"""
 elif os.environ['DATABASE_TYPE'] == 'mssql':
     INSERT_OR_UPDATE_AZURE_CUSTOMER = """
@@ -29,15 +29,15 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
     DECLARE @RequestUri VARCHAR(300);
     DECLARE @ResponseData VARCHAR(max);
     
-    SET @tId = %s;
-    SET @companyName = %s;
-    SET @tenantId = %s;
-    SET @domain = %s;
-    SET @objectType = %s;
-    SET @relationshipToPartner = %s;
-    SET @RegDate = %s;
-    SET @RequestUri = %s;
-    SET @ResponseData = %s;
+    SET @tId = ?;
+    SET @companyName = ?;
+    SET @tenantId = ?;
+    SET @domain = ?;
+    SET @objectType = ?;
+    SET @relationshipToPartner = ?;
+    SET @RegDate = ?;
+    SET @RequestUri = ?;
+    SET @ResponseData = ?;
     IF EXISTS (SELECT 1
                FROM [dbo].[Azure_Customer]
                WHERE [tenantId] = @tenantId)
@@ -90,15 +90,15 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,[RequestUri]
            ,[ResponseData])
      VALUES
-           (%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s)
+           (?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?)
 """
 
     INSERT_AZURE_CUSTOMER_SUBSCRIPTION = """
@@ -139,41 +139,41 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,[RequestUri]
            ,[ResponseData])
      VALUES
-           (%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s)
+           (?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?)
     """
     INSERT_AZURE_CUSTOMER_SOFTWARE = """
     INSERT INTO [dbo].[Azure_Entitlements_Software]
@@ -192,20 +192,20 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
                ,[RequestUri]
                ,[ResponseData])
          VALUES
-               (%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s)
+               (?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?)
     """
     INSERT_AZURE_CUSTOMER_RI = """
     INSERT INTO [dbo].[Azure_Entitlements_RI]
@@ -231,27 +231,27 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
                ,[RequestUri]
                ,[ResponseData])
          VALUES
-               (%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s)
+               (?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?)
     """
     INSERT_AZURE_INVOICE = """    
     DECLARE @invoiceDate datetime;
@@ -271,22 +271,22 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
     DECLARE @RequestUri varchar(300);
     DECLARE @ResponseData varchar(max);
     
-    SET @invoiceDate = %s;
-    SET @invoiceId = %s;
-    SET @billingPeriodStartDate = %s;
-    SET @billingPeriodEndDate = %s;
-    SET @totalCharges = %s;
-    SET @paidAmount = %s;
-    SET @currencyCode = %s;
-    SET @currencySymbol = %s;
-    SET @pdfDownloadLink = %s;
-    SET @invoiceType = %s;
-    SET @documentType = %s;
-    SET @state = %s;
-    SET @links_self_uri = %s;
-    SET @RegDate = %s;
-    SET @RequestUri = %s;
-    SET @ResponseData = %s;
+    SET @invoiceDate = ?;
+    SET @invoiceId = ?;
+    SET @billingPeriodStartDate = ?;
+    SET @billingPeriodEndDate = ?;
+    SET @totalCharges = ?;
+    SET @paidAmount = ?;
+    SET @currencyCode = ?;
+    SET @currencySymbol = ?;
+    SET @pdfDownloadLink = ?;
+    SET @invoiceType = ?;
+    SET @documentType = ?;
+    SET @state = ?;
+    SET @links_self_uri = ?;
+    SET @RegDate = ?;
+    SET @RequestUri = ?;
+    SET @ResponseData = ?;
     
     IF EXISTS (SELECT 1
                FROM [dbo].[Azure_Invoice]
@@ -459,23 +459,23 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,[RequestUri]
            ,[ResponseData])
      VALUES
-           (%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s)
+           (?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?)
 
     """
     INSERT_AZURE_METER_SHARED = """
@@ -498,23 +498,23 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
                ,[RequestUri]
                ,[ResponseData])
          VALUES
-               (%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s)
+               (?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?)
 
         """
     INSERT_OFFERTERM = """
@@ -527,13 +527,13 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,[effectiveDate]
            ,[RegDate])
      VALUES
-           (%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s)
+           (?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?)
     """
     INSERT_OFFERTERM_SHARED = """
         INSERT INTO [dbo].[Azure_OfferTerm_Listprice]
@@ -545,13 +545,13 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
                ,[effectiveDate]
                ,[RegDate])
          VALUES
-               (%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s)
+               (?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?)
         """
     INSERT_PRICELIST = """
     INSERT INTO [dbo].[Azure_PriceList]
@@ -569,19 +569,19 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,[Material]
            ,[RegDate])
      VALUES
-           (%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s)
+           (?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?)
     """
     INSERT_RI_PRICE = """
     INSERT INTO [dbo].[Azure_RI_PriceList]
@@ -615,35 +615,35 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,[USD]
            ,[RegDate])
      VALUES
-           (%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s)
+           (?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?)
            """
     INSERT_AZURE_UTILIZATION = """
     INSERT INTO [dbo].[Azure_Utilization]
@@ -670,28 +670,28 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
            ,[RequestUri]
            ,[ResponseData])
      VALUES
-           (%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s
-           ,%s)
+           (?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?
+           ,?)
     """
     SELECT_AZURE_UTILIZATION_WHERE_USER = """
     SELECT [Seq]
@@ -718,18 +718,18 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
     ,[RequestUri]
     ,[ResponseData]
   FROM [dbo].[Azure_Utilization]
-  WHERE [start_time]=%s and 
-      [end_time]=%s and
-      [tenantId]=%s and
-      [subscriptionId]=%s
+  WHERE [start_time]=? and 
+      [end_time]=? and
+      [tenantId]=? and
+      [subscriptionId]=?
 
     """
     DELETE_AZURE_UTILIZATION_WHERE_USER = """
     DELETE FROM [dbo].[Azure_Utilization]
-    WHERE [start_time]=%s and 
-      [end_time]=%s and
-      [tenantId]=%s and
-      [subscriptionId]=%s
+    WHERE [start_time]=? and 
+      [end_time]=? and
+      [tenantId]=? and
+      [subscriptionId]=?
     """
     DELETE_AZURE_RATECARD = """DELETE FROM [dbo].[Azure_Meter]"""
     DELETE_AZURE_RATECARD_SHARED = """DELETE FROM [dbo].[Azure_Meter_Listprice]"""
@@ -778,46 +778,46 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
                ,[RequestUri]
                ,[ResponseData])
          VALUES
-               (%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s)
+               (?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?)
 
     """
     INSERT_AZURE_INVOICE_DETAIL_OFFICE = """
@@ -857,39 +857,39 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
                ,[RequestUri]
                ,[ResponseData])
          VALUES
-               (%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s)
+               (?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?)
     """
     INSERT_AZURE_INVOICE_DETAIL_ONETIME = """
     INSERT INTO [dbo].[Azure_Invoice_Detail_Onetime]
@@ -941,53 +941,53 @@ elif os.environ['DATABASE_TYPE'] == 'mssql':
                ,[RequestUri]
                ,[ResponseData])
          VALUES
-               (%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s
-               ,%s)
+               (?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?
+               ,?)
 
     """
 
@@ -996,5 +996,5 @@ INSERT_AZUREPLAN_UNBILLED_RAW = """
     INSERT INTO [dbo].[Azure_Invoice_Unbilled_raw]
                ([RequestData], [ResponseData])
          VALUES
-               (%s, %s)
+               (?, ?)
     """
