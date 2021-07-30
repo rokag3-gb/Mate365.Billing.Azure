@@ -43,7 +43,10 @@ class DBConnect:
         LOGGER.debug(f'Connect String {self._db_options}')
         LOGGER.info("Connecting to database...")
         if os.environ['DATABASE_TYPE'] == 'mssql':
-            connection = sqllib.connect(self._db_options, encoding='utf8')
+            connection = sqllib.connect(self._db_options)
+            # connection.setdecoding(sqllib.SQL_CHAR, encoding='utf-8')
+            # connection.setdecoding(sqllib.SQL_WCHAR, encoding='utf-8')
+            connection.setencoding(encoding='utf-8')
         else:
             connection = sqllib.connect(self._db_options)
         LOGGER.info('DB connect.')
@@ -191,10 +194,8 @@ class DBConnect:
         LOGGER.debug(f'data : {data}')
         for i in range(5):
             try:
-                if os.environ['DATABASE_TYPE'] == 'mysql':
-                    cursor = self._client.cursor(sqllib.cursors.DictCursor)
-                elif os.environ['DATABASE_TYPE'] == 'mssql':
-                    cursor = self._client.cursor(as_dict=True)
+                cursor = self._client.cursor()
+                if os.environ['DATABASE_TYPE'] == 'mssql':
                     cursor.fast_executemany = False
             except AttributeError:
                 LOGGER.error('---------------SERVER CLOSED--------------------')
@@ -206,10 +207,11 @@ class DBConnect:
             try:
                 LOGGER.info("Executing SQL SELECT...")
                 cursor.execute(sql, data)
-                rows = cursor.fetchall()
+                
+                # rows = cursor.fetchall()
                 # cursor.close()
                 LOGGER.info('Executing SQL SELECT Success')
-                return rows
+                return self.cursor_to_dict(cursor)
             # TODO: 나올수 있는 에러 정리 / 처리 ( Exception )
             except sqllib.Error as e:
                 LOGGER.warning('[RETRY]SELECT SQL Error.. : %s' % e)
@@ -221,4 +223,12 @@ class DBConnect:
         LOGGER.error("Database Error...")
         raise sqllib.DatabaseError
 
+    def cursor_to_dict(self, cursor):
+        resultarr = []
+        while True:
+            columns = [col[0] for col in cursor.description]
+            dictset = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            if len(dictset) > 0: resultarr.append(dictset)
+            if not cursor.nextset(): break
+        return resultarr
 

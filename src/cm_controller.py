@@ -322,9 +322,9 @@ def save_invoice_detail_office(invoice_id: str, detail: dict):
     invoice_id = invoice_id
     provider = 'office'
     # 존재하는지 확인. 있으면 Delete
-    is_exist_sql = "SELECT 1 AS [count] FROM [dbo].[Azure_Invoice_Detail_Office] WHERE [invoiceId] = %s AND [billingProvider] = %s"
+    is_exist_sql = "SELECT 1 AS [count] FROM [dbo].[Azure_Invoice_Detail_Office] WHERE [invoiceId] = ? AND [billingProvider] = ?"
     if db.select_data(is_exist_sql, (invoice_id, provider)):
-        invoice_detail_delete_sql = "DELETE FROM [dbo].[Azure_Invoice_Detail_Office] WHERE [invoiceId] = %s AND [billingProvider] = %s"
+        invoice_detail_delete_sql = "DELETE FROM [dbo].[Azure_Invoice_Detail_Office] WHERE [invoiceId] = ? AND [billingProvider] = ?"
         db.delete_data(invoice_detail_delete_sql, (invoice_id, provider))
 
     insert_sql = db.get_sql().INSERT_AZURE_INVOICE_DETAIL_OFFICE
@@ -343,7 +343,7 @@ def save_invoice_detail_office(invoice_id: str, detail: dict):
                             items['chargeEndDate'], items['chargeType'], items['unitPrice'], items['quantity'],
                             items['amount'], items['totalOtherDiscount'], items['subtotal'],
                             items['tax'], items['totalForCustomer'], items['currency'], items['invoiceLineItemType'],
-                            items['billingProvider'], datetime.now(), detail['links']['self']['uri'], None))
+                            items['billingProvider'], datetime.now().replace(microsecond=0), detail['links']['self']['uri'], None))
     db.insert_data(insert_sql, insert_data)
 
 
