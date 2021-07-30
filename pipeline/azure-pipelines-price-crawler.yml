@@ -9,7 +9,7 @@ schedules:
   displayName: Every month at 10th 8 am(utc) (매월 10일 오후 5시)
   branches:
     include:
-    - develop
+    - pyodbc
   always: true
 
 
