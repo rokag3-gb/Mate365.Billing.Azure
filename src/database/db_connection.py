@@ -46,7 +46,7 @@ class DBConnect:
             connection = sqllib.connect(self._db_options)
             # connection.setdecoding(sqllib.SQL_CHAR, encoding='utf-8')
             # connection.setdecoding(sqllib.SQL_WCHAR, encoding='utf-8')
-            connection.setencoding(encoding='utf-8')
+            # connection.setencoding(encoding='utf-8')
         else:
             connection = sqllib.connect(self._db_options)
         LOGGER.info('DB connect.')
