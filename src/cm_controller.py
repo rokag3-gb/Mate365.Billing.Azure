@@ -368,17 +368,19 @@ def save_invoice_detail_onetime(invoice_id: str, detail: dict):
         items['orderDate'] = items['orderDate'][:19] + 'Z'
         insert_data.append((items['invoiceNumber'], items['partnerId'], items['customerId'], items['customerName'],
                             items['customerDomainName'], items['customerCountry'], items['invoiceNumber'], items['mpnId'],
-                            items['resellerMpnId'], items['orderId'], parse(items['orderDate']).replace(microsecond=0, tzinfo=None),
+                            items['resellerMpnId'], items['orderId'], parse(
+                                items['orderDate']),
                             items['productId'], items['skuId'], items['availabilityId'], items['productName'],
                             items['skuName'], items['chargeType'], items['unitPrice'],
                             items['effectiveUnitPrice'], items['unitType'], items['quantity'], items['subtotal'],
                             items['taxTotal'], items['totalForCustomer'], items['currency'],
                             items['publisherName'], items['publisherId'], items['subscriptionDescription'], items['subscriptionId'],
-                            parse(items['chargeStartDate']).replace(microsecond=0, tzinfo=None), parse(items['chargeEndDate']).replace(microsecond=0, tzinfo=None),
+                            parse(items['chargeStartDate']), parse(
+                                items['chargeEndDate']),
                             items['termAndBillingCycle'],
                             items['alternateId'], items['priceAdjustmentDescription'], items['discountDetails'],
                             items['pricingCurrency'], items['pcToBCExchangeRate'],
-                            parse(items['pcToBCExchangeRateDate']).replace(microsecond=0, tzinfo=None),
+                            parse(items['pcToBCExchangeRateDate']),
                             items['billableQuantity'],
                             items['meterDescription'], items['billingFrequency'],
                             items['reservationOrderId'], items['invoiceLineItemType'], items['billingProvider'],
