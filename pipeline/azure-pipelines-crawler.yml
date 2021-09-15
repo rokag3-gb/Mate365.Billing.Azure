@@ -16,20 +16,13 @@ schedules:
 pool:
   vmImage: 'ubuntu-latest'
 
-strategy:
-  matrix:
-    production:
-      crawlTarget: prod
-    sandbox:
-      crawlTarget: sandbox
-
 variables:
 - name: pythonVersion
   value: '3.8'
-# - group: Billing.AzureCrawler.vg
-- ${{ if eq(variables.crawlTarget, 'prod') }}:
+- group: Billing.AzureCrawler.vg
+- ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
   - group: Billing.AzureSandBoxCrawler.vg
-- ${{ if eq(variables.crawlTarget, 'sandbox') }}:
+- ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
   - group: Billing.AzureCrawler.vg
 
 steps:
@@ -52,4 +45,3 @@ steps:
   # python main.py --azplan-usage-update previous --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
   displayName: 'crawler'
   continueOnError: true
-
