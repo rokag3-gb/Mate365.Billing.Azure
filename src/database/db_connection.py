@@ -71,7 +71,9 @@ class DBConnect:
                 + f"SERVER={os.environ['DATABASE_HOST']},{os.environ['DATABASE_PORT']};"\
                 + f"DATABASE={os.environ['DATABASE_NAME']};"\
                 + f"UID={os.environ['DATABASE_USER']};"\
-                + f"PWD={os.environ['DATABASE_PASSWORD']};"
+                + f"PWD={env.database_password};"
+                # + f"PWD={os.environ['DATABASE_PASSWORD']};" \
+                
             
             
             # {'host': os.environ['DATABASE_HOST'],
