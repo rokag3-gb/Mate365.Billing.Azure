@@ -43,5 +43,5 @@ steps:
 
 - script: |
     export PYTHONPATH=$PYTHONPATH:$(System.DefaultWorkingDirectory)
-    python main.py --price-update --database-password $(DATABASE_PASSWORD) --app-secret $(SECRET)
+    python main.py --price-update --database-password $(DATABASE_PW) --app-secret $(SECRET)
   displayName: 'crawler'
