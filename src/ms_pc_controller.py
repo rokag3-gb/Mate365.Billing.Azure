@@ -138,7 +138,7 @@ def get_azure_daily_usage(tenant: str, subscription: str, t_date: datetime, para
                                                      param=params)['items']
 
 
-def azure_plan_unbilled_usage_raw(period: str, continuationToken: str = None, max_size=2000) -> list:
+def azure_plan_unbilled_usage_raw(period: str = "current", continuationToken: str = None, max_size=2000) -> list:
     req_params = {
         "provider": "onetime",
         "invoicelineitemtype": "usagelineitems",
@@ -146,12 +146,16 @@ def azure_plan_unbilled_usage_raw(period: str, continuationToken: str = None, ma
         "period": period,
         "size": max_size
     }
+    if period in ["current", "previous"]:
+        invoice_id = "unbilled"
+    else:
+        invoice_id = period
     headers = {}
     if continuationToken is not None:
         req_params["seekOperation"] = "Next"
         headers["MS-ContinuationToken"] = continuationToken
 
-    result = pc_request.azure_plan_unbilled_usage_raw(req_params, headers)
+    result = pc_request.azure_plan_unbilled_usage_raw(req_params, headers, invoice_id=invoice_id)
     req_params["tenantId"] = AzurePartnerCenterEnv.instance().tenant
     if continuationToken is not None:
         req_params["MS-ContinuationToken"] = continuationToken
