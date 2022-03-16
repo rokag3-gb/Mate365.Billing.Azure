@@ -146,9 +146,8 @@ def azure_plan_unbilled_usage_raw(period: str = "current", continuationToken: st
         "period": period,
         "size": max_size
     }
-    if period in ["current", "previous"]:
-        invoice_id = "unbilled"
-    else:
+    invoice_id = "unbilled"
+    if period not in ["current", "previous"]:
         invoice_id = period
     headers = {}
     if continuationToken is not None:
