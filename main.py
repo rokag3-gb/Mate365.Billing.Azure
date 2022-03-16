@@ -9,6 +9,10 @@ if __name__ == '__main__':
     # 환경변수 설정
     env = AzurePartnerCenterEnv.instance()
 
+    if env.token:
+        print('Access Token:', env.access_token)
+        pass
+
     # 일별 사용량 수집
     if env.daily_usage:
         daily_usage_crawler()

@@ -24,6 +24,7 @@ class AzurePartnerCenterEnv:
         # .env 파일 존재시, 환경변수 업데이트 후 불러오기.
         parser = argparse.ArgumentParser()
         parser.add_argument('-f', '--file', action='store_true', help='.env파일을 통한 환경변수 등록')
+        parser.add_argument('--token', action='store_true', help='토큰 발급')
         parser.add_argument('--database-password', type=str, help='')
         parser.add_argument('--mfa-auth-issue', action='store_true', help='MFA 인증으로 토큰 발급하여 저장')
         parser.add_argument('--mfa-auth', type=str, help='MFA 인증으로 발급한 토큰으로 인증') #MFA 인증으로 발급한 토큰으로 인증
@@ -37,6 +38,7 @@ class AzurePartnerCenterEnv:
         
         args = parser.parse_args()
         # 실행 로직 선택(bool)
+        self.token = args.token
         self.daily_usage = args.daily_usage
         self.daily_usage_update = args.daily_usage_update
         self.update_period = args.update_period
