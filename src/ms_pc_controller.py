@@ -149,6 +149,7 @@ def azure_plan_unbilled_usage_raw(period: str = "current", continuationToken: st
     invoice_id = "unbilled"
     if period not in ["current", "previous"]:
         invoice_id = period
+        req_params.pop("period", None)
     headers = {}
     if continuationToken is not None:
         req_params["seekOperation"] = "Next"
