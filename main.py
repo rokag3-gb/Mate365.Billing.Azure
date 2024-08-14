@@ -22,7 +22,7 @@ if __name__ == '__main__':
         daily_usage_update_crawler(period=env.update_period)
         send_teams_msg(f'일별 사용량 업데이트 완료 - 기간: {env.update_period}')
     
-    if len(env.azplan_usage_update.strip()) > 0:
+    if env.azplan_usage_update and len(env.azplan_usage_update.strip()) > 0:
         azplan_usage_crawler(period=env.azplan_usage_update)
         send_teams_msg('azplan 사용량 수집 완료')
 
