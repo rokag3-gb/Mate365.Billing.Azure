@@ -1,5 +1,5 @@
 import os
-
+import trackback
 from src.database import db_sql
 from src.env import AzurePartnerCenterEnv
 from src.logger.logger import LOGGER
@@ -92,6 +92,7 @@ class DBConnect:
                 cursor = self._client.cursor()
             except AttributeError:
                 LOGGER.error('---------------SERVER CLOSED--------------------')
+                print(trackback.format_exc())
                 raise
 
             try:
@@ -107,9 +108,11 @@ class DBConnect:
                 LOGGER.warning('[RETRY]INSERT SQL Error.. : %s' % e)
                 cursor.close()
                 self._connect()
+                print(trackback.format_exc())
             except Exception as e:
                 LOGGER.warning('[RETRY]DB Error.. : %s' % e)
                 cursor.close()
+                print(trackback.format_exc())
         LOGGER.error("Database Error...")
         LOGGER.exception('exception')
         raise sqllib.DatabaseError
